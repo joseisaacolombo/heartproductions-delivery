@@ -763,36 +763,12 @@ document.addEventListener('DOMContentLoaded', async () => {
    GOOGLE SHEETS FETCH
 ════════════════════════════════════════ */
 async function fetchClientData(code) {
-  const range  = encodeURIComponent(`${CONFIG.SHEET_NAME}!A:O`);
-  const url    = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${range}?key=${CONFIG.API_KEY}`;
-  const res    = await fetch(url);
+  const url = `https://kapturit-sheets-proxy.joseisaacolombo.workers.dev/?code=${encodeURIComponent(code)}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Sheets API error: ' + res.status);
-  const json   = await res.json();
-  const rows   = json.values || [];
-  // Fila 0 = encabezados, buscar desde fila 1
-  for (let i = 1; i < rows.length; i++) {
-    const r = rows[i];
-    if ((r[0] || '').toUpperCase() === code) {
-      return {
-        ID:                   r[0]  || '',
-        baby_name:            r[1]  || '',
-        last_name:            r[2]  || '',
-        session_date:         r[3]  || '',
-        session_type:         r[4]  || 'Session',
-        hospital:             r[5]  || '',
-        weight:               r[6]  || '—',
-        height:               r[7]  || '—',
-        paid:                 r[8]  || 'no',
-        stripe_link:          r[9]  || '',
-        drive_preview_folder: r[10] || '',
-        drive_hd_folder:      r[11] || '',
-        gallery_printlab_link:r[12] || '',
-        name_package:         r[13] || '',
-        price_package:        r[14] || '',
-      };
-    }
-  }
-  return null;
+  const json = await res.json();
+  if (json.error) return null;
+  return json;
 }
 
 /* ════════════════════════════════════════
