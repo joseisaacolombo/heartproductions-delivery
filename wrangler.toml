@@ -1,0 +1,12 @@
+name = "kapturit-sheets-proxy"
+type = "service"
+account_id = "04e84f55bcdf503c245a133eea53f64a"
+workers_dev = true
+compatibility_date = "2026-04-07"
+main = "src/index.js"
+
+[vars]
+SA_CLIENT_EMAIL = "kapturit-worker@kapturit-portal.iam.gserviceaccount.com"
+SA_PRIVATE_KEY_ID = "59cfac8e025d3824e30820617d250b17a15fbd96"
+SA_PROJECT_ID = "kapturit-portal"
+# SA_PRIVATE_KEY → subir como secret: wrangler secret put SA_PRIVATE_KEY
