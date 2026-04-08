@@ -68,18 +68,29 @@ export default {
     const SHEET_NAME = 'Kapturit-Portal';
 
     try {
+      console.log('[sheets] SA_CLIENT_EMAIL:', env.SA_CLIENT_EMAIL ?? 'UNDEFINED');
+      console.log('[sheets] SA_PRIVATE_KEY present:', !!env.SA_PRIVATE_KEY);
+      console.log('[sheets] SA_PRIVATE_KEY starts with:', env.SA_PRIVATE_KEY?.slice(0, 30));
+
       const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
+      console.log('[sheets] privateKey after replace, first line:', privateKey.split('\n')[0]);
+
       const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
+      console.log('[sheets] accessToken obtained, length:', accessToken?.length);
 
       const range = encodeURIComponent(`${SHEET_NAME}!A:O`);
       const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+      console.log('[sheets] requesting:', sheetsUrl);
 
       const res = await fetch(sheetsUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
+      console.log('[sheets] response status:', res.status);
+
       if (!res.ok) {
         const errText = await res.text();
+        console.log('[sheets] error body:', errText);
         throw new Error(`Sheets API error ${res.status}: ${errText}`);
       }
 
@@ -173,13 +184,17 @@ async function getGoogleAccessToken(clientEmail, privateKey) {
 
   const jwt = `${signingInput}.${encodedSig}`;
 
+  console.log('[oauth] requesting token for:', clientEmail);
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
   });
 
+  console.log('[oauth] token response status:', tokenRes.status);
   const tokenJson = await tokenRes.json();
+  console.log('[oauth] token response body:', JSON.stringify(tokenJson));
+
   if (!tokenJson.access_token) {
     throw new Error(`OAuth error: ${JSON.stringify(tokenJson)}`);
   }
