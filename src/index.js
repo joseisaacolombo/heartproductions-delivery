@@ -11,6 +11,50 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // Si es una request de listFiles
+    if (url.searchParams.get('action') === 'listFiles') {
+      const folderId = url.searchParams.get('folderId');
+
+      if (!folderId) {
+        return new Response(JSON.stringify({ error: 'Missing folderId' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+
+      try {
+        const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
+        const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
+
+        const searchQuery = `parents='${folderId}' and mimeType contains 'image'`;
+        const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(searchQuery)}&spaces=drive&fields=files(id,name,webContentLink)`;
+
+        const res = await fetch(driveUrl, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(`Drive API error: ${data.error?.message || res.status}`);
+        }
+
+        return new Response(JSON.stringify({ files: data.files || [] }), {
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+    }
+
     const code = url.searchParams.get('code');
 
     if (!code) {
