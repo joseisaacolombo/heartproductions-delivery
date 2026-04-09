@@ -183,14 +183,14 @@ img{display:block;max-width:100%}
 .stat-val{font-family:'Noto Serif',serif;font-size:1.55rem;color:var(--primary)}
 
 /* ── Photo grid ── */
-#stack-container{
+#stack-container,#gallery-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:.5rem;
   padding:.5rem;
 }
 @media(min-width:700px){
-  #stack-container{grid-template-columns:repeat(3,1fr)}
+  #stack-container,#gallery-grid{grid-template-columns:repeat(3,1fr)}
 }
 .photo-cell{
   aspect-ratio:3/4;
@@ -273,6 +273,88 @@ img{display:block;max-width:100%}
 .prints-foot-title{font-family:'Noto Serif',serif;font-style:italic;color:var(--primary);font-size:1.05rem;margin-bottom:.3rem}
 .prints-foot-sub{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--outline)}
 
+/* ── Baby hero ── */
+.baby-hero{text-align:center;padding:2rem 1.25rem 1.5rem}
+.baby-hero-name{font-family:'Noto Serif',serif;font-size:2.8rem;letter-spacing:-.02em;line-height:1.1;color:var(--on-surf)}
+.baby-hero-sub{font-size:.75rem;color:var(--muted);margin-top:.45rem;letter-spacing:.04em}
+
+/* ── Video restricted (unpaid) ── */
+.video-thumb.restricted{aspect-ratio:unset;height:210px;cursor:default;border-radius:1.25rem}
+.video-locked-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:1.25rem .85rem .6rem;
+  background:linear-gradient(to top,rgba(47,52,48,.8),transparent);
+  display:flex;align-items:center;gap:.45rem;
+}
+.video-locked-bar svg{width:13px;height:13px;stroke:#fff;flex-shrink:0}
+.video-locked-bar span{font-size:.55rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+
+/* ── Package cards ── */
+.pkg-section{padding:0 1.25rem;margin-bottom:2.25rem}
+.pkg-grid{display:flex;flex-direction:column;gap:1rem}
+.pkg-card{
+  background:var(--surf-lo);border-radius:1.5rem;
+  padding:1.5rem;border:1.5px solid rgba(119,124,120,.1);
+  position:relative;
+}
+.pkg-card.featured{background:var(--on-surf);border-color:var(--primary)}
+.pkg-badge{
+  position:absolute;top:-.6rem;left:50%;transform:translateX(-50%);
+  background:var(--primary);color:#fff;
+  font-size:.5rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  padding:.22rem .9rem;border-radius:9999px;white-space:nowrap;
+}
+.pkg-name{font-family:'Noto Serif',serif;font-size:1.1rem;margin-bottom:.3rem;color:var(--on-surf)}
+.pkg-card.featured .pkg-name{color:#fff}
+.pkg-desc{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:.85rem}
+.pkg-card.featured .pkg-desc{color:rgba(255,255,255,.55)}
+.pkg-price-row{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.35rem}
+.pkg-price{font-family:'Noto Serif',serif;font-size:2.15rem;color:var(--primary);line-height:1}
+.pkg-card.featured .pkg-price{color:var(--pri-c)}
+.pkg-price-was{font-size:.82rem;text-decoration:line-through;color:var(--outline)}
+.pkg-tier-pill{
+  display:inline-block;font-size:.5rem;letter-spacing:.18em;
+  text-transform:uppercase;font-weight:700;
+  padding:.2rem .65rem;border-radius:9999px;
+  background:var(--sec-c);color:var(--secondary);margin-bottom:.85rem;
+}
+.pkg-features{list-style:none;margin-bottom:1.15rem;border-top:1px solid rgba(119,124,120,.1)}
+.pkg-card.featured .pkg-features{border-color:rgba(255,255,255,.1)}
+.pkg-features li{
+  font-size:.79rem;line-height:1.5;
+  padding:.4rem 0;border-bottom:1px solid rgba(119,124,120,.08);
+  display:flex;gap:.5rem;align-items:flex-start;color:var(--on-surf);
+}
+.pkg-card.featured .pkg-features li{color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.08)}
+.pkg-check{color:var(--secondary);font-weight:700;flex-shrink:0}
+.pkg-card.featured .pkg-check{color:var(--sec-c)}
+
+/* ── FAQ ── */
+.faq-list{border-top:1px solid rgba(119,124,120,.12)}
+.faq-item{border-bottom:1px solid rgba(119,124,120,.12)}
+.faq-q{
+  width:100%;background:none;border:none;text-align:left;
+  padding:1rem 0;font-family:'Manrope',sans-serif;font-weight:600;
+  font-size:.88rem;color:var(--on-surf);cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+}
+.faq-chevron{color:var(--primary);flex-shrink:0;font-size:1.2rem;transition:transform .25s ease;font-style:normal}
+.faq-item.open .faq-chevron{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-a-inner{font-size:.82rem;line-height:1.75;color:var(--muted);padding-bottom:1rem}
+.faq-item.open .faq-a{max-height:600px}
+
+/* ── Contact form ── */
+.contact-form{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+.form-input{
+  width:100%;padding:.85rem 1rem;border-radius:.85rem;
+  border:1.5px solid var(--surf-hhi);background:var(--surf);
+  font-family:'Manrope',sans-serif;font-size:.88rem;color:var(--on-surf);
+  outline:none;transition:border-color .2s;resize:none;
+}
+.form-input:focus{border-color:var(--primary)}
+.form-success{display:none;text-align:center;padding:1.5rem 0;color:var(--secondary);font-weight:600;font-size:.88rem}
+
 /* ── Bottom nav ── */
 #bottom-nav{
   position:fixed;bottom:0;left:0;right:0;z-index:500;
@@ -345,10 +427,16 @@ img{display:block;max-width:100%}
 <!-- App -->
 <div id="app">
 
-  <!-- ══ GALLERY TAB ══ -->
-  <div id="tab-gallery" class="tab active">
+  <!-- ══ BABY TAB ══ -->
+  <div id="tab-baby" class="tab active">
 
-    <!-- Hero: video (full-width) -->
+    <!-- Baby name -->
+    <div class="baby-hero">
+      <div class="baby-hero-name" id="baby-name">—</div>
+      <div class="baby-hero-sub" id="baby-sub">—</div>
+    </div>
+
+    <!-- Video -->
     <div class="media-outer">
       <div class="sec-lbl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -370,13 +458,14 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
+    <!-- CTA: packages (unpaid) or downloads (paid) -->
     <div class="inner">
-      <!-- CTA -->
-      <div id="cta-wrap" class="cta-stack gap"></div>
+      <div id="cta-wrap"></div>
+    </div>
 
-      <!-- Baby stats -->
+    <!-- Baby stats -->
+    <div class="inner">
       <div class="baby-stats gap">
-        <div class="baby-name" id="baby-name">—</div>
         <div class="stats-grid">
           <div><span class="stat-lbl" data-i18n="weight">Weight</span><span class="stat-val" id="stat-peso">—</span></div>
           <div><span class="stat-lbl" data-i18n="height">Height</span><span class="stat-val" id="stat-talla">—</span></div>
@@ -384,30 +473,24 @@ img{display:block;max-width:100%}
           <div><span class="stat-lbl" data-i18n="date">Date</span><span class="stat-val" id="stat-fecha">—</span></div>
         </div>
       </div>
+    </div>
 
-      <!-- Moments label -->
+    <!-- Moments / Photo grid -->
+    <div class="inner" style="padding-bottom:0">
       <div class="sec-lbl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         <span data-i18n="moments">Moments</span>
       </div>
-    </div><!-- /inner (CTA + stats + moments) -->
-
-    <!-- Scroll card stack (full bleed) -->
+    </div>
     <div id="stack-container"></div>
 
     <!-- Prints -->
     <div class="inner" style="padding-top:2rem">
       <div class="prints-card">
         <div class="prints-icons">
-          <div class="pi pi-sm">
-            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </div>
-          <div class="pi pi-md">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          </div>
-          <div class="pi pi-sm">
-            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </div>
+          <div class="pi pi-sm"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="pi pi-md"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+          <div class="pi pi-sm"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
         </div>
         <h3 class="prints-title" data-i18n="printsTitle">Preserve the Moment</h3>
         <p class="prints-desc" data-i18n="printsDesc">Turn your favorite photos into unique physical pieces: handcrafted albums, canvas prints, and high-quality frames.</p>
@@ -421,6 +504,17 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
+  </div><!-- /tab-baby -->
+
+  <!-- ══ GALLERY TAB ══ -->
+  <div id="tab-gallery" class="tab">
+    <div class="inner" style="padding-bottom:0">
+      <div class="sec-lbl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span data-i18n="moments">Moments</span>
+      </div>
+    </div>
+    <div id="gallery-grid"></div>
   </div><!-- /tab-gallery -->
 
   <!-- ══ FILM TAB ══ -->
@@ -443,24 +537,41 @@ img{display:block;max-width:100%}
   <!-- ══ SUPPORT TAB ══ -->
   <div id="tab-support" class="tab">
     <div class="inner">
-      <div class="sec-lbl">
+
+      <!-- Contact -->
+      <div class="sec-lbl" style="margin-bottom:.9rem">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span data-i18n="support">Support</span>
       </div>
-      <div class="support-card">
+      <div class="support-card" style="margin-bottom:2rem">
         <div class="support-title" data-i18n="supportTitle">Have a question?</div>
-        <div class="support-sub" data-i18n="supportSub">We respond in under 24 hrs. Reach us by SMS or email.</div>
-        <div class="support-btns">
-          <a href="sms:+1" class="btn-p">
+        <div class="support-sub" data-i18n="supportSub">We respond in under 24 hrs. Reach us by SMS or the form below.</div>
+        <div class="support-btns" style="margin-bottom:1.5rem">
+          <a href="sms:+12108008000" class="btn-p">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span data-i18n="sendSms">Send SMS</span>
           </a>
-          <a href="mailto:hello@kapturit.com" class="btn-s">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <span data-i18n="email">Email</span>
-          </a>
         </div>
+        <!-- Contact form -->
+        <form class="contact-form" id="contact-form">
+          <input class="form-input" type="text" id="cf-name" placeholder="Your name" required/>
+          <input class="form-input" type="tel" id="cf-phone" placeholder="Phone number"/>
+          <textarea class="form-input" id="cf-msg" rows="3" placeholder="How can we help?" required></textarea>
+          <button type="submit" class="btn-s">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span data-i18n="sendMsg">Send Message</span>
+          </button>
+          <div class="form-success" id="form-success" data-i18n="msgSent">✓ Message sent — we'll be in touch shortly.</div>
+        </form>
       </div>
+
+      <!-- FAQ -->
+      <div class="sec-lbl" style="margin-bottom:.9rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        FAQ
+      </div>
+      <div class="faq-list" id="faq-list"></div>
+
     </div>
   </div><!-- /tab-support -->
 
@@ -476,17 +587,21 @@ img{display:block;max-width:100%}
 
 <!-- Bottom nav -->
 <nav id="bottom-nav">
-  <button class="nav-btn active" data-tab="tab-gallery">
+  <button class="nav-btn active" data-tab="tab-baby">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 2.76-2.24 5-5 5S7 9.76 7 7a5 5 0 0 1 5-5z"/><path d="M2 22c0-5.52 4.48-10 10-10s10 4.48 10 10"/></svg>
+    <span class="nav-lbl" data-i18n="navBaby">Baby</span>
+  </button>
+  <button class="nav-btn" data-tab="tab-gallery">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    <span class="nav-lbl">Gallery</span>
+    <span class="nav-lbl" data-i18n="navGallery">Gallery</span>
   </button>
   <button class="nav-btn" data-tab="tab-film">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-    <span class="nav-lbl">Film</span>
+    <span class="nav-lbl" data-i18n="navFilm">Film</span>
   </button>
   <button class="nav-btn" data-tab="tab-support">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span class="nav-lbl">Support</span>
+    <span class="nav-lbl" data-i18n="navSupport">Support</span>
   </button>
 </nav>
 
@@ -510,9 +625,10 @@ const STRINGS = {
     thanksSub:   'It has been an honor to capture your story',
     support:     'Support',
     supportTitle:'Have a question?',
-    supportSub:  'We respond in under 24 hrs. Reach us by SMS or email.',
+    supportSub:  'We respond in under 24 hrs. Reach us by SMS or the form below.',
     sendSms:     'Send SMS',
-    email:       'Email',
+    sendMsg:     'Send Message',
+    msgSent:     '✓ Message sent — we\'ll be in touch shortly.',
     // JS-rendered
     previewWm:   'Preview · watermarked',
     hdNoWm:      'Full HD · No watermark',
@@ -521,9 +637,25 @@ const STRINGS = {
     downloadDesc:'Download all photos and the film in full HD, no watermarks.',
     downloadGallery: 'Download Full Gallery',
     downloadFilm:'Download Film',
-    purchase:    'Purchase Collection',
+    purchase:    'Purchase',
     noFilm:      'Film not available yet.',
     moment:      'Moment',
+    pkgTierEarly:'Early Access Price',
+    pkgTierHospital:'In-Hospital Rate',
+    navBaby:     'Baby',
+    navGallery:  'Gallery',
+    navFilm:     'Film',
+    navSupport:  'Support',
+    faqQ1: 'When will my gallery be ready?',
+    faqA1: 'Your preview gallery is available immediately. Full HD photos without watermarks are delivered within 3–5 business days after purchase.',
+    faqQ2: 'How do I download my photos?',
+    faqA2: 'After purchasing your collection, a download button appears in your portal. All photos download in full resolution, watermark-free.',
+    faqQ3: 'How long will my portal be available?',
+    faqA3: 'Your private portal stays active for 12 months from your session date.',
+    faqQ4: 'Can I share my gallery with family?',
+    faqA4: 'Yes — you can share your private portal link with trusted family and friends.',
+    faqQ5: 'What is the difference between the packages?',
+    faqA5: 'Digital Visual Legacy includes professionally mastered photos. Cinematic Heirloom adds a full HD film. The Masterpiece Collection includes both plus a hand-bound linen album.',
   },
   es: {
     portalId:    'Portal ID Privado',
@@ -540,9 +672,10 @@ const STRINGS = {
     thanksSub:   'Ha sido un honor capturar tu historia',
     support:     'Soporte',
     supportTitle:'¿Tienes alguna pregunta?',
-    supportSub:  'Respondemos en menos de 24 hrs. Escríbenos por SMS o correo.',
+    supportSub:  'Respondemos en menos de 24 hrs. Escríbenos por SMS o el formulario.',
     sendSms:     'Enviar SMS',
-    email:       'Correo electrónico',
+    sendMsg:     'Enviar Mensaje',
+    msgSent:     '✓ Mensaje enviado — nos pondremos en contacto pronto.',
     // JS-rendered
     previewWm:   'Vista previa · marca de agua',
     hdNoWm:      'Full HD · Sin marca de agua',
@@ -551,9 +684,25 @@ const STRINGS = {
     downloadDesc:'Descarga todas las fotos y la película en alta definición, sin marcas de agua.',
     downloadGallery: 'Descargar Galería Completa',
     downloadFilm:'Descargar Película',
-    purchase:    'Comprar Colección',
+    purchase:    'Comprar',
     noFilm:      'Película no disponible aún.',
     moment:      'Momento',
+    pkgTierEarly:'Precio de Acceso Temprano',
+    pkgTierHospital:'Tarifa de Hospital',
+    navBaby:     'Bebé',
+    navGallery:  'Galería',
+    navFilm:     'Película',
+    navSupport:  'Soporte',
+    faqQ1: '¿Cuándo estará lista mi galería?',
+    faqA1: 'Tu galería de vista previa está disponible de inmediato. Las fotos en alta definición sin marcas de agua se entregan en 3–5 días hábiles tras la compra.',
+    faqQ2: '¿Cómo descargo mis fotos?',
+    faqA2: 'Después de adquirir tu colección, aparece un botón de descarga en tu portal. Las fotos se descargan en resolución completa, sin marcas de agua.',
+    faqQ3: '¿Por cuánto tiempo estará disponible mi portal?',
+    faqA3: 'Tu portal privado permanece activo durante 12 meses a partir de la fecha de tu sesión.',
+    faqQ4: '¿Puedo compartir mi galería con familiares?',
+    faqA4: 'Sí, puedes compartir el enlace privado de tu portal con familiares y amigos de confianza.',
+    faqQ5: '¿Cuál es la diferencia entre los paquetes?',
+    faqA5: 'Digital Visual Legacy incluye fotos masterizadas profesionalmente. Cinematic Heirloom agrega una película en Full HD. The Masterpiece Collection incluye ambos más un álbum de lino encuadernado a mano.',
   },
 };
 
@@ -574,6 +723,7 @@ function toggleLang() {
   if (!CLIENT) return;
   // Re-render dynamic sections that contain translated strings
   renderCTA();
+  initFAQ();
   // Update pill texts
   const vp = document.getElementById('vid-pill-text');
   if (vp) vp.textContent = (_heroVideoFile && (IS_PAID && hdVidName(_heroVideoFile)))
@@ -683,6 +833,7 @@ async function renderPortal() {
 
   // Stats
   document.getElementById('baby-name').textContent     = CLIENT.baby_name || '—';
+  document.getElementById('baby-sub').textContent      = [CLIENT.hospital, CLIENT.session_date].filter(Boolean).join(' · ');
   document.getElementById('stat-peso').textContent     = CLIENT.weight    || '—';
   document.getElementById('stat-talla').textContent    = CLIENT.height    || '—';
   document.getElementById('stat-hospital').textContent = CLIENT.hospital  || '—';
@@ -715,6 +866,7 @@ async function renderPortal() {
   buildScrollStack(photos);
   renderFilmTab(videoFile);
   initNav();
+  initFAQ();
 
   // Prints → Pixieset usando el ID operativo (CLIENT.ID)
   const pb = document.getElementById('prints-btn');
@@ -793,7 +945,10 @@ function renderCTA() {
         `https://drive.google.com/uc?id=${VIDEO_ID}&export=download`,
         iconFilm(), T('downloadFilm'), 'download_film'));
     }
+  } else if (CLIENT.packages && CLIENT.packages.length) {
+    renderPackages(wrap);
   } else {
+    // Fallback: single price card (demo / legacy)
     const card = document.createElement('div');
     card.className = 'unpaid-c';
     card.innerHTML = `
@@ -806,6 +961,53 @@ function renderCTA() {
       wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), T('purchase'), 'purchase_click'));
     }
   }
+}
+
+function renderPackages(wrap) {
+  const section = document.createElement('div');
+  section.className = 'pkg-section';
+  const grid = document.createElement('div');
+  grid.className = 'pkg-grid';
+
+  CLIENT.packages.forEach(pkg => {
+    const isFeatured = !!pkg.badge;
+    const card = document.createElement('div');
+    card.className = 'pkg-card' + (isFeatured ? ' featured' : '');
+
+    const showWas = pkg.tier !== 'regular' && pkg.price_regular && pkg.price_regular !== pkg.price;
+    const tierLabel = pkg.tier === 'hospital' ? T('pkgTierHospital')
+                    : pkg.tier === 'portal'   ? T('pkgTierEarly') : '';
+
+    card.innerHTML = `
+      ${pkg.badge ? `<div class="pkg-badge">${pkg.badge}</div>` : ''}
+      <div class="pkg-name">${pkg.name}</div>
+      <div class="pkg-desc">${pkg.description}</div>
+      <div class="pkg-price-row">
+        <span class="pkg-price">$${pkg.price}</span>
+        ${showWas ? `<span class="pkg-price-was">$${pkg.price_regular}</span>` : ''}
+      </div>
+      ${tierLabel ? `<div class="pkg-tier-pill">${tierLabel}</div>` : ''}
+      <ul class="pkg-features">
+        ${pkg.features.map(f => `<li><span class="pkg-check">✓</span> ${f}</li>`).join('')}
+      </ul>
+    `;
+
+    if (pkg.stripe_link && pkg.stripe_link !== '#') {
+      const btn = document.createElement('a');
+      btn.className = 'btn-p';
+      btn.href = pkg.stripe_link;
+      btn.target = '_blank';
+      btn.rel = 'noopener';
+      btn.innerHTML = iconCard() + T('purchase');
+      btn.addEventListener('click', () => track('purchase_click', { package_id: pkg.id, price: pkg.price }));
+      card.appendChild(btn);
+    }
+
+    grid.appendChild(card);
+  });
+
+  section.appendChild(grid);
+  wrap.appendChild(section);
 }
 
 function makeLink(cls, href, iconSvg, label, eventName) {
@@ -824,14 +1026,8 @@ function iconCard() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="no
 ════════════════════════════════════════ */
 let _gridSrcs = [];
 
-function buildScrollStack(photos) {
-  const container = document.getElementById('stack-container');
+function _buildGridCells(container) {
   container.innerHTML = '';
-
-  _gridSrcs = photos.length
-    ? photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
-    : CONFIG.DEMO_PHOTOS;
-
   _gridSrcs.forEach((src, i) => {
     const cell = document.createElement('div');
     cell.className = 'photo-cell' + (IS_PAID ? '' : ' locked');
@@ -857,6 +1053,15 @@ function buildScrollStack(photos) {
     cell.appendChild(shield);
     container.appendChild(cell);
   });
+}
+
+function buildScrollStack(photos) {
+  _gridSrcs = photos.length
+    ? photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
+    : CONFIG.DEMO_PHOTOS;
+
+  _buildGridCells(document.getElementById('stack-container'));
+  _buildGridCells(document.getElementById('gallery-grid'));
 }
 
 /* ════════════════════════════════════════
@@ -937,6 +1142,43 @@ function initNav() {
     });
   });
 }
+
+/* ════════════════════════════════════════
+   FAQ
+════════════════════════════════════════ */
+function initFAQ() {
+  const keys = ['1','2','3','4','5'];
+  const faqs = keys.map(k => ({ q: T('faqQ' + k), a: T('faqA' + k) }));
+
+  const list = document.getElementById('faq-list');
+  list.innerHTML = '';
+
+  faqs.forEach(({ q, a }) => {
+    const item = document.createElement('div');
+    item.className = 'faq-item';
+    item.innerHTML = `
+      <button class="faq-q">${q}<i class="faq-chevron">+</i></button>
+      <div class="faq-a"><div class="faq-a-inner">${a}</div></div>
+    `;
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      item.classList.toggle('open');
+    });
+    list.appendChild(item);
+  });
+}
+
+/* ════════════════════════════════════════
+   CONTACT FORM
+════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const phone = document.getElementById('cf-phone').value;
+    document.getElementById('form-success').style.display = 'block';
+    e.target.reset();
+    track('support_message', { has_phone: !!phone });
+  });
+});
 
 /* ════════════════════════════════════════
    ERROR
