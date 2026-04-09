@@ -170,11 +170,11 @@ img{display:block;max-width:100%}
 
 /* ── Scroll card stack ── */
 #stack-container{position:relative}
-.stack-spacer{height:80vh;position:relative}
+.stack-spacer{height:100vh;position:relative}
 .stack-slide{
   position:sticky;
   top:calc(var(--hdr) + var(--safe-top) + .75rem);
-  height:calc(100dvh - var(--hdr) - var(--nav) - var(--safe-top) - var(--safe-bot) - 1.5rem);
+  height:72vh;
   padding:0 1.25rem;
   max-width:480px;margin:0 auto;
 }
@@ -183,7 +183,7 @@ img{display:block;max-width:100%}
   border-radius:2rem;overflow:hidden;
   box-shadow:0 20px 60px rgba(47,52,48,.15);
   transform-origin:top center;
-  transition:transform .08s linear;
+  transition:transform .06s linear;
   will-change:transform;
   position:relative;
 }
@@ -281,9 +281,12 @@ img{display:block;max-width:100%}
 <!-- Header -->
 <header id="topbar">
   <div class="tb-brand">The Digital Heirloom</div>
-  <div class="tb-id-wrap">
-    <span class="tb-id-label">Private Portal ID</span>
-    <span class="tb-id-code" id="tb-code">—</span>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <button id="lang-btn" onclick="toggleLang()" style="background:var(--surf-hi);border:none;cursor:pointer;border-radius:9999px;padding:.28rem .65rem;font-family:'Manrope',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:.18em;color:var(--muted)">ES</button>
+    <div class="tb-id-wrap">
+      <span class="tb-id-label" data-i18n="portalId">Private Portal ID</span>
+      <span class="tb-id-code" id="tb-code">—</span>
+    </div>
   </div>
 </header>
 
@@ -298,12 +301,12 @@ img{display:block;max-width:100%}
       <div class="gap">
         <div class="sec-lbl">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Tu Película
+          <span data-i18n="yourFilm">Your Film</span>
         </div>
         <div class="video-thumb" id="video-thumb">
-          <img id="video-cover" src="" alt="Portada"/>
+          <img id="video-cover" src="" alt="Cover"/>
           <div class="play-overlay" id="play-overlay">
-            <button class="play-btn-el" id="play-btn" aria-label="Reproducir película">
+            <button class="play-btn-el" id="play-btn" aria-label="Play film">
               <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </button>
           </div>
@@ -323,17 +326,17 @@ img{display:block;max-width:100%}
       <div class="baby-stats gap">
         <div class="baby-name" id="baby-name">—</div>
         <div class="stats-grid">
-          <div><span class="stat-lbl">Peso</span><span class="stat-val" id="stat-peso">—</span></div>
-          <div><span class="stat-lbl">Talla</span><span class="stat-val" id="stat-talla">—</span></div>
-          <div><span class="stat-lbl">Hospital</span><span class="stat-val" id="stat-hospital">—</span></div>
-          <div><span class="stat-lbl">Fecha</span><span class="stat-val" id="stat-fecha">—</span></div>
+          <div><span class="stat-lbl" data-i18n="weight">Weight</span><span class="stat-val" id="stat-peso">—</span></div>
+          <div><span class="stat-lbl" data-i18n="height">Height</span><span class="stat-val" id="stat-talla">—</span></div>
+          <div><span class="stat-lbl" data-i18n="hospital">Hospital</span><span class="stat-val" id="stat-hospital">—</span></div>
+          <div><span class="stat-lbl" data-i18n="date">Date</span><span class="stat-val" id="stat-fecha">—</span></div>
         </div>
       </div>
 
       <!-- Moments label -->
       <div class="sec-lbl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Momentos
+        <span data-i18n="moments">Moments</span>
       </div>
     </div><!-- /inner -->
 
@@ -354,15 +357,15 @@ img{display:block;max-width:100%}
             <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </div>
         </div>
-        <h3 class="prints-title">Conserva el Momento</h3>
-        <p class="prints-desc">Transforma tus fotos favoritas en piezas físicas únicas: álbumes artesanales, lienzos y marcos de alta calidad.</p>
+        <h3 class="prints-title" data-i18n="printsTitle">Preserve the Moment</h3>
+        <p class="prints-desc" data-i18n="printsDesc">Turn your favorite photos into unique physical pieces: handcrafted albums, canvas prints, and high-quality frames.</p>
         <a id="prints-btn" href="#" class="btn-o" target="_blank" rel="noopener">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Pedir Impresiones
+          <span data-i18n="orderPrints">Order Prints</span>
         </a>
         <div class="prints-foot">
-          <p class="prints-foot-title">Gracias por confiar en Kapturit</p>
-          <p class="prints-foot-sub">Ha sido un honor capturar tu historia</p>
+          <p class="prints-foot-title" data-i18n="thanksTitle">Thank you for trusting Kapturit</p>
+          <p class="prints-foot-sub" data-i18n="thanksSub">It has been an honor to capture your story</p>
         </div>
       </div>
     </div>
@@ -373,7 +376,7 @@ img{display:block;max-width:100%}
     <div class="inner">
       <div class="sec-lbl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        Tu Película
+        <span data-i18n="yourFilm">Your Film</span>
       </div>
       <div id="film-wrap" class="film-wrap"></div>
       <div class="video-meta" style="margin-top:.6rem">
@@ -390,19 +393,19 @@ img{display:block;max-width:100%}
     <div class="inner">
       <div class="sec-lbl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Soporte
+        <span data-i18n="support">Support</span>
       </div>
       <div class="support-card">
-        <div class="support-title">¿Tienes alguna pregunta?</div>
-        <div class="support-sub">Respondemos en menos de 24 hrs. Escríbenos por SMS o correo.</div>
+        <div class="support-title" data-i18n="supportTitle">Have a question?</div>
+        <div class="support-sub" data-i18n="supportSub">We respond in under 24 hrs. Reach us by SMS or email.</div>
         <div class="support-btns">
           <a href="sms:+1" class="btn-p">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Enviar SMS
+            <span data-i18n="sendSms">Send SMS</span>
           </a>
           <a href="mailto:hello@kapturit.com" class="btn-s">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Correo electrónico
+            <span data-i18n="email">Email</span>
           </a>
         </div>
       </div>
@@ -429,6 +432,98 @@ img{display:block;max-width:100%}
 
 <script>
 /* ════════════════════════════════════════
+   STRINGS / i18n
+════════════════════════════════════════ */
+const STRINGS = {
+  en: {
+    portalId:    'Private Portal ID',
+    yourFilm:    'Your Film',
+    moments:     'Moments',
+    weight:      'Weight',
+    height:      'Height',
+    hospital:    'Hospital',
+    date:        'Date',
+    printsTitle: 'Preserve the Moment',
+    printsDesc:  'Turn your favorite photos into unique physical pieces: handcrafted albums, canvas prints, and high-quality frames.',
+    orderPrints: 'Order Prints',
+    thanksTitle: 'Thank you for trusting Kapturit',
+    thanksSub:   'It has been an honor to capture your story',
+    support:     'Support',
+    supportTitle:'Have a question?',
+    supportSub:  'We respond in under 24 hrs. Reach us by SMS or email.',
+    sendSms:     'Send SMS',
+    email:       'Email',
+    // JS-rendered
+    previewWm:   'Preview · watermarked',
+    hdNoWm:      'Full HD · No watermark',
+    preview:     'Preview',
+    yourCollection: 'Your collection',
+    downloadDesc:'Download all photos and the film in full HD, no watermarks.',
+    downloadGallery: 'Download Full Gallery',
+    downloadFilm:'Download Film',
+    purchase:    'Purchase Collection',
+    noFilm:      'Film not available yet.',
+    moment:      'Moment',
+  },
+  es: {
+    portalId:    'Portal ID Privado',
+    yourFilm:    'Tu Película',
+    moments:     'Momentos',
+    weight:      'Peso',
+    height:      'Talla',
+    hospital:    'Hospital',
+    date:        'Fecha',
+    printsTitle: 'Conserva el Momento',
+    printsDesc:  'Transforma tus fotos favoritas en piezas físicas únicas: álbumes artesanales, lienzos y marcos de alta calidad.',
+    orderPrints: 'Pedir Impresiones',
+    thanksTitle: 'Gracias por confiar en Kapturit',
+    thanksSub:   'Ha sido un honor capturar tu historia',
+    support:     'Soporte',
+    supportTitle:'¿Tienes alguna pregunta?',
+    supportSub:  'Respondemos en menos de 24 hrs. Escríbenos por SMS o correo.',
+    sendSms:     'Enviar SMS',
+    email:       'Correo electrónico',
+    // JS-rendered
+    previewWm:   'Vista previa · marca de agua',
+    hdNoWm:      'Full HD · Sin marca de agua',
+    preview:     'Vista previa',
+    yourCollection: 'Tu colección',
+    downloadDesc:'Descarga todas las fotos y la película en alta definición, sin marcas de agua.',
+    downloadGallery: 'Descargar Galería Completa',
+    downloadFilm:'Descargar Película',
+    purchase:    'Comprar Colección',
+    noFilm:      'Película no disponible aún.',
+    moment:      'Momento',
+  },
+};
+
+let LANG = 'en';
+
+function T(key) { return (STRINGS[LANG] || STRINGS.en)[key] || key; }
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = T(el.dataset.i18n);
+  });
+}
+
+function toggleLang() {
+  LANG = LANG === 'en' ? 'es' : 'en';
+  document.getElementById('lang-btn').textContent = LANG === 'en' ? 'ES' : 'EN';
+  applyI18n();
+  if (!CLIENT) return;
+  // Re-render dynamic sections that contain translated strings
+  renderCTA();
+  // Update pill texts
+  const vp = document.getElementById('vid-pill-text');
+  if (vp) vp.textContent = (_heroVideoFile && (IS_PAID && hdVidName(_heroVideoFile)))
+    ? T('hdNoWm') : T('previewWm');
+  const fp = document.getElementById('film-pill-text');
+  if (fp) fp.textContent = (_filmVideoFile && (IS_PAID && hdVidName(_filmVideoFile)))
+    ? T('hdNoWm') : T('preview');
+}
+
+/* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
 const CONFIG = {
@@ -445,11 +540,15 @@ const CONFIG = {
 let CLIENT   = null;
 let IS_PAID  = false;
 let VIDEO_ID = null;
+let _heroPhotos    = [];
+let _heroVideoFile = null;
+let _filmVideoFile = undefined;
 
 /* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+  applyI18n();
   const params = new URLSearchParams(window.location.search);
   const code   = (params.get('id') || '').trim().toUpperCase();
   const demo   = !code || window.location.protocol === 'file:';
@@ -556,6 +655,9 @@ async function renderPortal() {
    HERO VIDEO
 ════════════════════════════════════════ */
 function renderHeroVideo(photos, videoFile) {
+  _heroPhotos    = photos;
+  _heroVideoFile = videoFile;
+
   const cover   = document.getElementById('video-cover');
   const pill    = document.getElementById('vid-pill');
   const pillTxt = document.getElementById('vid-pill-text');
@@ -575,7 +677,7 @@ function renderHeroVideo(photos, videoFile) {
 
   pill.style.display    = 'inline-flex';
   pillTxt.textContent   = (IS_PAID && hdVidName(videoFile))
-    ? 'Full HD · Sin marca de agua' : 'Vista previa · marca de agua';
+    ? T('hdNoWm') : T('previewWm');
 
   playBtn.addEventListener('click', () => {
     const thumb = document.getElementById('video-thumb');
@@ -600,24 +702,24 @@ function renderCTA() {
 
   if (IS_PAID) {
     if (CLIENT.drive_hd_folder && CLIENT.drive_hd_folder !== '#') {
-      wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), 'Descargar Galería Completa'));
+      wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), T('downloadGallery')));
     }
     if (VIDEO_ID) {
       wrap.appendChild(makeLink('btn-s',
         `https://drive.google.com/uc?id=${VIDEO_ID}&export=download`,
-        iconFilm(), 'Descargar Película'));
+        iconFilm(), T('downloadFilm')));
     }
   } else {
     const card = document.createElement('div');
     card.className = 'unpaid-c';
     card.innerHTML = `
-      <div class="unpaid-pkg">${CLIENT.name_package || 'Tu colección'}</div>
+      <div class="unpaid-pkg">${CLIENT.name_package || T('yourCollection')}</div>
       <div class="unpaid-price">$${CLIENT.price_package || '—'}</div>
-      <p class="unpaid-desc">Descarga todas las fotos y la película en alta definición, sin marcas de agua.</p>
+      <p class="unpaid-desc">${T('downloadDesc')}</p>
     `;
     wrap.appendChild(card);
     if (CLIENT.stripe_link && CLIENT.stripe_link !== '#') {
-      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), 'Comprar Colección'));
+      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), T('purchase')));
     }
   }
 }
@@ -666,7 +768,7 @@ function buildScrollStack(photos) {
 
     const overlay = document.createElement('div');
     overlay.className = 'stack-card-overlay';
-    overlay.innerHTML = `<span class="stack-card-num">${String(i+1).padStart(2,'0')} / ${String(srcs.length).padStart(2,'0')}</span>`;
+    overlay.innerHTML = `<span class="stack-card-num">${T('moment')} ${String(i+1).padStart(2,'0')} / ${String(srcs.length).padStart(2,'0')}</span>`;
 
     card.appendChild(img);
     card.appendChild(overlay);
@@ -688,16 +790,20 @@ function initScrollAnim(container) {
     const cards   = container.querySelectorAll('.stack-card');
     const scrollY = window.scrollY;
     const viewH   = window.innerHeight;
-    const slideH  = viewH * 0.8; // matches .stack-spacer height: 80vh
+    // spacer = 100vh, card = 72vh → scroll range per card = 28vh
+    const cardH   = viewH * 0.72;
+    const spacerH = viewH * 1.0;
+    const range   = spacerH - cardH; // ~28vh per card
 
     cards.forEach((card) => {
-      const spacer   = card.closest('.stack-spacer');
+      const spacer = card.closest('.stack-spacer');
       if (!spacer) return;
       const top      = spacer.getBoundingClientRect().top + scrollY;
-      const progress = Math.max(0, Math.min(1, (scrollY - top) / slideH));
-      const scale    = 1 - progress * 0.055;
-      const tY       = -(progress * 48);
+      const progress = Math.max(0, Math.min(1, (scrollY - top) / range));
+      const scale    = 1 - progress * 0.07;
+      const tY       = -(progress * 40);
       card.style.transform = `scale(${scale}) translateY(${tY}px)`;
+      card.style.opacity   = progress > 0.92 ? 1 - (progress - 0.92) / 0.08 : 1;
     });
   }
 
@@ -709,11 +815,12 @@ function initScrollAnim(container) {
    FILM TAB
 ════════════════════════════════════════ */
 function renderFilmTab(videoFile) {
+  _filmVideoFile = videoFile;
   const wrap  = document.getElementById('film-wrap');
   const badge = document.getElementById('film-pill-text');
 
   if (!videoFile) {
-    wrap.outerHTML = `<div class="film-none"><p>Película no disponible aún.</p></div>`;
+    wrap.outerHTML = `<div class="film-none"><p>${T('noFilm')}</p></div>`;
     return;
   }
 
@@ -723,7 +830,7 @@ function renderFilmTab(videoFile) {
   wrap.appendChild(iframe);
 
   badge.textContent = (IS_PAID && hdVidName(videoFile))
-    ? 'Full HD · Sin marca de agua' : 'Vista previa · marca de agua';
+    ? T('hdNoWm') : T('preview');
 }
 
 /* ════════════════════════════════════════
