@@ -4,6 +4,47 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// ── Package catalog (update prices/links when Stripe links are ready) ──
+const PACKAGES = [
+  {
+    id: 'photos',
+    name: 'Digital Visual Legacy',
+    badge: null,
+    description: 'Still cinematography focused — a comprehensive collection of professionally mastered digital highlights.',
+    features: ['40+ Mastered Highlights', 'Digital Art Gallery Access', 'Private Viewing & Download Rights', 'Secure SMS Delivery'],
+    prices: { hospital: 149, portal: 199, regular: 249 },
+    stripe: { hospital: '#', portal: '#', regular: '#' }, // replace with real Stripe links
+  },
+  {
+    id: 'video',
+    name: 'Cinematic Heirloom',
+    badge: 'Most Popular',
+    description: 'Motion tells the story still filmmaking cannot — a professionally edited film capturing the rhythm and sound of your baby\'s arrival.',
+    features: ['Full HD Cinematic Heirloom Film', 'Director\'s Cut Highlight Reel', 'Instant SMS Arrival Alert', 'Raw Narrative Audio Capture', 'Private Secure Portal'],
+    prices: { hospital: 249, portal: 329, regular: 399 },
+    stripe: { hospital: '#', portal: '#', regular: '#' },
+  },
+  {
+    id: 'bundle',
+    name: 'The Masterpiece Collection',
+    badge: null,
+    description: 'The ultimate preservation — full scale cinematography, film, and a physical heirloom book to be touched for generations.',
+    features: ['Full Cinematography Suite', 'Hand-Bound Linen Heirloom Album', 'SMS Alerts & Premium Private Portal', 'Priority Filmmaker Assignment'],
+    prices: { hospital: 449, portal: 549, regular: 649 },
+    stripe: { hospital: '#', portal: '#', regular: '#' },
+  },
+];
+
+function getPriceTier(sentAt) {
+  if (!sentAt) return 'regular';
+  const sent = new Date(sentAt).getTime();
+  if (isNaN(sent)) return 'regular';
+  const hoursElapsed = (Date.now() - sent) / 3600000;
+  if (hoursElapsed < 0) return 'hospital'; // sent in the future = hospital session
+  if (hoursElapsed <= 72) return 'portal';
+  return 'regular';
+}
+
 const RATE_MAX      = 10;   // max failed attempts
 const RATE_WINDOW   = 3600; // seconds (1 hour)
 
@@ -113,7 +154,7 @@ export default {
       const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
       console.log('[sheets] accessToken obtained, length:', accessToken?.length);
 
-      const range = encodeURIComponent(`${SHEET_NAME}!A:T`);
+      const range = encodeURIComponent(`${SHEET_NAME}!A:V`);
       const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
       console.log('[sheets] requesting:', sheetsUrl);
 
@@ -136,6 +177,19 @@ export default {
         const r = rows[i];
         if ((r[18] || '').toUpperCase() === code.toUpperCase()) {
           await clearRateLimit(env, ip); // reset counter on success
+          const sentAt   = r[21] || ''; // Column V: sent_at
+          const tier     = getPriceTier(sentAt);
+          const packages = PACKAGES.map(pkg => ({
+            id:          pkg.id,
+            name:        pkg.name,
+            badge:       pkg.badge,
+            description: pkg.description,
+            features:    pkg.features,
+            price:       pkg.prices[tier],
+            price_regular: pkg.prices.regular,
+            stripe_link: pkg.stripe[tier],
+            tier,
+          }));
           return new Response(
             JSON.stringify({
               ID: r[0] || '',
@@ -147,15 +201,14 @@ export default {
               weight: r[6] || '—',
               height: r[7] || '—',
               paid: r[8] || 'no',
-              stripe_link: r[9] || '',
               drive_preview_folder: r[10] || '',
               drive_hd_folder: r[11] || '',
-              gallery_printlab_link: r[12] || '',
-              name_package: r[13] || '',
-              price_package: r[14] || '',
               drive_preview_folder_id: r[15] || '',
               drive_hd_folder_id: r[16] || '',
               video_folder_id: r[19] || '',
+              sent_at: sentAt,
+              price_tier: tier,
+              packages,
             }),
             { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
           );
