@@ -4,6 +4,30 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+const RATE_MAX      = 10;   // max failed attempts
+const RATE_WINDOW   = 3600; // seconds (1 hour)
+
+async function checkRateLimit(env, ip) {
+  const key  = `rl:${ip}`;
+  const raw  = await env.RATE_LIMIT.get(key);
+  const data = raw ? JSON.parse(raw) : { count: 0 };
+
+  if (data.count >= RATE_MAX) return false; // blocked
+  return true; // allowed
+}
+
+async function recordFailedAttempt(env, ip) {
+  const key  = `rl:${ip}`;
+  const raw  = await env.RATE_LIMIT.get(key);
+  const data = raw ? JSON.parse(raw) : { count: 0 };
+  data.count += 1;
+  await env.RATE_LIMIT.put(key, JSON.stringify(data), { expirationTtl: RATE_WINDOW });
+}
+
+async function clearRateLimit(env, ip) {
+  await env.RATE_LIMIT.delete(`rl:${ip}`);
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -66,6 +90,15 @@ export default {
       });
     }
 
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const allowed = await checkRateLimit(env, ip);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Too many attempts. Try again in 1 hour.' }), {
+        status: 429,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      });
+    }
+
     const SHEET_ID = '1wODkzWQ3FOmOJcyXU9p3G_H3NwzCdqzvG1zAOW58Kj8';
     const SHEET_NAME = 'Kapturit-Portal';
 
@@ -102,6 +135,7 @@ export default {
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
         if ((r[18] || '').toUpperCase() === code.toUpperCase()) {
+          await clearRateLimit(env, ip); // reset counter on success
           return new Response(
             JSON.stringify({
               ID: r[0] || '',
@@ -128,6 +162,7 @@ export default {
         }
       }
 
+      await recordFailedAttempt(env, ip); // count failed lookup
       return new Response(JSON.stringify({ error: 'Code not found' }), {
         status: 404,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },

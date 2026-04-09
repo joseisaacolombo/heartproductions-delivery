@@ -5,6 +5,10 @@ workers_dev = true
 compatibility_date = "2026-04-07"
 main = "src/index.js"
 
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "16c5916428b641eeb0c8e24b3e2e02ac"
+
 [vars]
 SA_CLIENT_EMAIL = "kapturit-worker@kapturit-portal.iam.gserviceaccount.com"
 SA_PRIVATE_KEY_ID = "59cfac8e025d3824e30820617d250b17a15fbd96"
