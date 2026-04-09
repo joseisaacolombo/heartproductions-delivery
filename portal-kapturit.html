@@ -826,7 +826,7 @@ async function renderPortal() {
 
   // Fetch photos from Drive via Worker
   let driveFiles = [];
-  const folderId = CLIENT.drive_preview_folder;
+  const folderId = CLIENT.drive_preview_folder_id || CLIENT.drive_preview_folder;
   if (folderId) {
     try {
       const filesRes = await fetch(

@@ -78,7 +78,7 @@ export default {
       const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
       console.log('[sheets] accessToken obtained, length:', accessToken?.length);
 
-      const range = encodeURIComponent(`${SHEET_NAME}!A:O`);
+      const range = encodeURIComponent(`${SHEET_NAME}!A:S`);
       const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
       console.log('[sheets] requesting:', sheetsUrl);
 
@@ -99,7 +99,7 @@ export default {
 
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
-        if ((r[0] || '').toUpperCase() === code.toUpperCase()) {
+        if ((r[18] || '').toUpperCase() === code.toUpperCase()) {
           return new Response(
             JSON.stringify({
               ID: r[0] || '',
@@ -117,6 +117,8 @@ export default {
               gallery_printlab_link: r[12] || '',
               name_package: r[13] || '',
               price_package: r[14] || '',
+              drive_preview_folder_id: r[15] || '',
+              drive_hd_folder_id: r[16] || '',
             }),
             { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
           );
