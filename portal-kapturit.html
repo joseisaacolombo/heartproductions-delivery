@@ -189,12 +189,31 @@ img{display:block;max-width:100%}
   border-radius:.85rem;overflow:hidden;
   background:var(--surf-hi);
   cursor:pointer;
+  position:relative;
 }
 .photo-cell img{
   width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .3s ease;
+  pointer-events:none;
+  -webkit-user-drag:none;user-select:none;
 }
 .photo-cell:hover img{transform:scale(1.04)}
+/* Shield blocks right-click/drag at the cell level */
+.photo-shield{
+  position:absolute;inset:0;z-index:2;
+}
+/* Unpaid: show a lock hint on hover */
+.photo-cell.locked{cursor:default}
+.photo-cell.locked:hover img{transform:none}
+.photo-cell.locked .photo-shield::after{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;transition:opacity .2s;
+}
+.photo-cell.locked:hover .photo-shield::after{
+  opacity:1;
+  background:rgba(47,52,48,.25);
+}
 
 /* ── Lightbox ── */
 #lightbox{
@@ -787,16 +806,27 @@ function buildScrollStack(photos) {
 
   _gridSrcs.forEach((src, i) => {
     const cell = document.createElement('div');
-    cell.className = 'photo-cell';
+    cell.className = 'photo-cell' + (IS_PAID ? '' : ' locked');
 
     const img = document.createElement('img');
     img.src = src;
     img.alt = `${T('moment')} ${i + 1}`;
     img.loading = i < 6 ? 'eager' : 'lazy';
+    img.draggable = false;
     img.onerror = () => { cell.style.display = 'none'; };
 
+    // Transparent shield — blocks right-click and drag on all photos
+    const shield = document.createElement('div');
+    shield.className = 'photo-shield';
+    shield.addEventListener('contextmenu', e => e.preventDefault());
+    shield.addEventListener('dragstart',   e => e.preventDefault());
+
+    if (IS_PAID) {
+      shield.addEventListener('click', () => openLightbox(i));
+    }
+
     cell.appendChild(img);
-    cell.addEventListener('click', () => openLightbox(i));
+    cell.appendChild(shield);
     container.appendChild(cell);
   });
 }
@@ -830,6 +860,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('lightbox').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeLightbox();
   });
+  document.getElementById('lb-img').addEventListener('contextmenu', e => e.preventDefault());
+  document.getElementById('lb-img').draggable = false;
   document.addEventListener('keydown', e => {
     if (!document.getElementById('lightbox').classList.contains('open')) return;
     if (e.key === 'ArrowLeft')  lbStep(-1);
