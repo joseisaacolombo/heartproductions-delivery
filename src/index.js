@@ -27,7 +27,9 @@ export default {
         const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
         const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
 
-        const searchQuery = `parents='${folderId}' and mimeType contains 'image'`;
+        const type = url.searchParams.get('type') || 'image';
+        const mimeFilter = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
+        const searchQuery = `parents='${folderId}' and ${mimeFilter}`;
         const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(searchQuery)}&spaces=drive&fields=files(id,name,webContentLink)`;
 
         const res = await fetch(driveUrl, {
@@ -78,7 +80,7 @@ export default {
       const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
       console.log('[sheets] accessToken obtained, length:', accessToken?.length);
 
-      const range = encodeURIComponent(`${SHEET_NAME}!A:S`);
+      const range = encodeURIComponent(`${SHEET_NAME}!A:T`);
       const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
       console.log('[sheets] requesting:', sheetsUrl);
 
@@ -119,6 +121,7 @@ export default {
               price_package: r[14] || '',
               drive_preview_folder_id: r[15] || '',
               drive_hd_folder_id: r[16] || '',
+              video_folder_id: r[19] || '',
             }),
             { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
           );
