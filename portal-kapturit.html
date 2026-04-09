@@ -174,38 +174,54 @@ img{display:block;max-width:100%}
 .stat-lbl{font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--outline);display:block;margin-bottom:.3rem}
 .stat-val{font-family:'Noto Serif',serif;font-size:1.55rem;color:var(--primary)}
 
-/* ── Scroll card stack ── */
+/* ── Photo grid ── */
 #stack-container{
-  display:flex;flex-direction:column;align-items:center;
-  padding:50vh 0.5rem 60vh;
-  gap:10vh;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:.5rem;
+  padding:.5rem;
 }
-.stack-card{
-  position:sticky;
-  top:10vh;
-  height:80vh;
-  width:82%;
-  border-radius:1.5rem;overflow:hidden;
-  box-shadow:0 20px 60px rgba(47,52,48,.15);
-  transform-origin:top center;
-  will-change:transform;
-  flex-shrink:0;
+@media(min-width:700px){
+  #stack-container{grid-template-columns:repeat(3,1fr)}
 }
-.stack-card img{
-  width:100%;height:115%;margin-top:-7.5%;
-  object-fit:cover;display:block;
-  transform-origin:center center;
-  will-change:transform;
+.photo-cell{
+  aspect-ratio:3/4;
+  border-radius:.85rem;overflow:hidden;
+  background:var(--surf-hi);
+  cursor:pointer;
 }
-.stack-card-overlay{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:2rem 1.5rem 1.5rem;
-  background:linear-gradient(to top,rgba(47,52,48,.45),transparent);
+.photo-cell img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .3s ease;
 }
-.stack-card-num{
-  font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(255,255,255,.65);font-weight:600;
+.photo-cell:hover img{transform:scale(1.04)}
+
+/* ── Lightbox ── */
+#lightbox{
+  display:none;position:fixed;inset:0;z-index:8500;
+  background:rgba(23,26,24,.96);
+  align-items:center;justify-content:center;
 }
+#lightbox.open{display:flex}
+#lightbox img{
+  max-width:92vw;max-height:88vh;
+  border-radius:1rem;object-fit:contain;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+}
+#lb-close{
+  position:absolute;top:1.25rem;right:1.25rem;
+  background:rgba(255,255,255,.12);border:none;cursor:pointer;
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.3rem;
+}
+#lb-prev,#lb-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.12);border:none;cursor:pointer;
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;
+}
+#lb-prev{left:1rem}#lb-next{right:1rem}
 
 /* ── Prints ── */
 .prints-card{
@@ -422,6 +438,14 @@ img{display:block;max-width:100%}
   </div><!-- /tab-support -->
 
 </div><!-- /app -->
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lb-close">&#x2715;</button>
+  <button id="lb-prev">&#x2039;</button>
+  <img id="lb-img" src="" alt=""/>
+  <button id="lb-next">&#x203A;</button>
+</div>
 
 <!-- Bottom nav -->
 <nav id="bottom-nav">
@@ -749,86 +773,70 @@ function iconFilm() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="no
 function iconCard() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`; }
 
 /* ════════════════════════════════════════
-   SCROLL CARD STACK
+   PHOTO GRID
 ════════════════════════════════════════ */
+let _gridSrcs = [];
+
 function buildScrollStack(photos) {
   const container = document.getElementById('stack-container');
   container.innerHTML = '';
 
-  const srcs = photos.length
+  _gridSrcs = photos.length
     ? photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
     : CONFIG.DEMO_PHOTOS;
 
-  srcs.forEach((src, i) => {
-    const card = document.createElement('div');
-    card.className = 'stack-card';
+  _gridSrcs.forEach((src, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'photo-cell';
 
     const img = document.createElement('img');
     img.src = src;
     img.alt = `${T('moment')} ${i + 1}`;
-    img.loading = i < 2 ? 'eager' : 'lazy';
-    img.onerror = () => { img.style.display = 'none'; };
+    img.loading = i < 6 ? 'eager' : 'lazy';
+    img.onerror = () => { cell.style.display = 'none'; };
 
-    const overlay = document.createElement('div');
-    overlay.className = 'stack-card-overlay';
-    overlay.innerHTML = `<span class="stack-card-num">${T('moment')} ${String(i+1).padStart(2,'0')} / ${String(srcs.length).padStart(2,'0')}</span>`;
-
-    card.appendChild(img);
-    card.appendChild(overlay);
-    container.appendChild(card);
+    cell.appendChild(img);
+    cell.addEventListener('click', () => openLightbox(i));
+    container.appendChild(cell);
   });
-
-  initScrollAnim(container);
 }
 
-function initScrollAnim(container) {
-  // Skiper34 approach: all cards are sticky siblings in a flex column.
-  // Each new card slides on top of the previous one.
-  // As a card is covered, it slowly rotates & the image counter-rotates.
-  const ANIM_RANGE = 8000; // px of scroll over which rotation/scale plays
-  const MAX_ROT    = 6;    // degrees
-  const MAX_SCALE_REDUCE = 0.12; // card shrinks at most 12%
+/* ════════════════════════════════════════
+   LIGHTBOX
+════════════════════════════════════════ */
+let _lbIdx = 0;
 
-  let pinYs = [];
-
-  function calcPins() {
-    const vh = window.innerHeight;
-    const containerAbsTop = container.getBoundingClientRect().top + window.scrollY;
-    const paddingTop = vh * 0.5;  // 50vh (matches CSS padding-top)
-    const cardH      = vh * 0.8;  // 80vh (matches CSS height)
-    const gapH       = vh * 0.1;  // 10vh (matches CSS gap)
-    const stickyTop  = vh * 0.1;  // 10vh (matches CSS top)
-
-    container.querySelectorAll('.stack-card').forEach((_, i) => {
-      // scroll position at which card[i]'s top reaches sticky point (10vh)
-      pinYs[i] = containerAbsTop + paddingTop + i * (cardH + gapH) - stickyTop;
-    });
-  }
-
-  function tick() {
-    const scrollY = window.scrollY;
-    container.querySelectorAll('.stack-card').forEach((card, i) => {
-      const pinY = pinYs[i];
-      if (pinY === undefined || scrollY <= pinY) {
-        card.style.transform = '';
-        const img = card.querySelector('img');
-        if (img) img.style.transform = 'scale(1)';
-        return;
-      }
-      const delta = scrollY - pinY;
-      const t = Math.min(1, delta / ANIM_RANGE);
-      const rot   = t * MAX_ROT;
-      const scale = 1 - t * MAX_SCALE_REDUCE;
-      card.style.transform = `scale(${scale.toFixed(4)}) rotate(${rot.toFixed(3)}deg)`;
-      const img = card.querySelector('img');
-      if (img) img.style.transform = `scale(1.12) rotate(${(-rot).toFixed(3)}deg)`;
-    });
-  }
-
-  requestAnimationFrame(() => { calcPins(); tick(); });
-  window.addEventListener('scroll', tick, { passive: true });
-  window.addEventListener('resize', () => { calcPins(); tick(); }, { passive: true });
+function openLightbox(idx) {
+  _lbIdx = idx;
+  document.getElementById('lb-img').src = _gridSrcs[idx];
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lbStep(dir) {
+  _lbIdx = (_lbIdx + dir + _gridSrcs.length) % _gridSrcs.length;
+  document.getElementById('lb-img').src = _gridSrcs[_lbIdx];
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('lb-close').addEventListener('click', closeLightbox);
+  document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
+  document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
+  document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeLightbox();
+  });
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  lbStep(-1);
+    if (e.key === 'ArrowRight') lbStep(1);
+    if (e.key === 'Escape')     closeLightbox();
+  });
+});
 
 /* ════════════════════════════════════════
    FILM TAB
