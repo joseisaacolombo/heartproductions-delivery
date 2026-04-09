@@ -290,12 +290,21 @@ img{display:block;max-width:100%}
 .video-locked-bar span{font-size:.55rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.85)}
 
 /* ── Package cards ── */
-.pkg-section{padding:0 1.25rem;margin-bottom:2.25rem}
-.pkg-grid{display:flex;flex-direction:column;gap:1rem}
+.pkg-section{margin-bottom:2.25rem}
+.pkg-grid{
+  display:flex;flex-direction:row;gap:.85rem;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  padding:.75rem 1.25rem 1.25rem;
+  scrollbar-width:none;
+}
+.pkg-grid::-webkit-scrollbar{display:none}
 .pkg-card{
   background:var(--surf-lo);border-radius:1.5rem;
   padding:1.5rem;border:1.5px solid rgba(119,124,120,.1);
   position:relative;
+  flex:0 0 78vw;max-width:300px;
+  scroll-snap-align:center;
 }
 .pkg-card.featured{background:var(--on-surf);border-color:var(--primary)}
 .pkg-badge{
@@ -1008,6 +1017,14 @@ function renderPackages(wrap) {
 
   section.appendChild(grid);
   wrap.appendChild(section);
+
+  // Auto-scroll to the featured (Most Popular) card
+  const featured = grid.querySelector('.pkg-card.featured');
+  if (featured) {
+    requestAnimationFrame(() => {
+      featured.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+    });
+  }
 }
 
 function makeLink(cls, href, iconSvg, label, eventName) {
