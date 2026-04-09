@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Kapturit · Your Private Gallery</title>
 <meta name="robots" content="noindex,nofollow,noarchive"/>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-98BLYDY4NQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-98BLYDY4NQ');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -596,6 +604,17 @@ let _heroPhotos    = [];
 let _heroVideoFile = null;
 let _filmVideoFile = undefined;
 
+/* ── Analytics helper ── */
+function track(eventName, params = {}) {
+  if (typeof gtag === 'undefined') return;
+  gtag('event', eventName, {
+    client_id:    CLIENT?.ID || 'unknown',
+    baby_name:    CLIENT?.baby_name || '',
+    paid:         IS_PAID ? 'yes' : 'no',
+    ...params,
+  });
+}
+
 /* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
@@ -701,11 +720,18 @@ async function renderPortal() {
   const pb = document.getElementById('prints-btn');
   if (CLIENT.ID) {
     pb.href = `https://heartproductions.pixieset.com/${CLIENT.ID}/`;
+    pb.addEventListener('click', () => track('prints_click'));
   }
 
   // Show
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').style.display = 'block';
+
+  track('portal_open', {
+    session_type: CLIENT.session_type || '',
+    hospital:     CLIENT.hospital || '',
+    photo_count:  photos.length,
+  });
 }
 
 /* ════════════════════════════════════════
@@ -737,6 +763,7 @@ function renderHeroVideo(photos, videoFile) {
     ? T('hdNoWm') : T('previewWm');
 
   playBtn.addEventListener('click', () => {
+    track('video_play', { video_type: hdVidName(videoFile) ? 'hd' : 'preview' });
     const thumb = document.getElementById('video-thumb');
     const iframe = document.createElement('iframe');
     iframe.src = `https://drive.google.com/file/d/${videoFile.id}/preview`;
@@ -759,12 +786,12 @@ function renderCTA() {
 
   if (IS_PAID) {
     if (CLIENT.drive_hd_folder && CLIENT.drive_hd_folder !== '#') {
-      wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), T('downloadGallery')));
+      wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), T('downloadGallery'), 'download_gallery'));
     }
     if (VIDEO_ID) {
       wrap.appendChild(makeLink('btn-s',
         `https://drive.google.com/uc?id=${VIDEO_ID}&export=download`,
-        iconFilm(), T('downloadFilm')));
+        iconFilm(), T('downloadFilm'), 'download_film'));
     }
   } else {
     const card = document.createElement('div');
@@ -776,15 +803,16 @@ function renderCTA() {
     `;
     wrap.appendChild(card);
     if (CLIENT.stripe_link && CLIENT.stripe_link !== '#') {
-      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), T('purchase')));
+      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), T('purchase'), 'purchase_click'));
     }
   }
 }
 
-function makeLink(cls, href, iconSvg, label) {
+function makeLink(cls, href, iconSvg, label, eventName) {
   const a = document.createElement('a');
   a.className = cls; a.href = href; a.target = '_blank'; a.rel = 'noopener';
   a.innerHTML = iconSvg + label;
+  if (eventName) a.addEventListener('click', () => track(eventName));
   return a;
 }
 function iconDownload() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>`; }
@@ -841,6 +869,7 @@ function openLightbox(idx) {
   document.getElementById('lb-img').src = _gridSrcs[idx];
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
+  track('photo_open', { photo_index: idx + 1 });
 }
 
 function closeLightbox() {
@@ -904,6 +933,7 @@ function initNav() {
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      track('tab_switch', { tab: tabId.replace('tab-', '') });
     });
   });
 }
