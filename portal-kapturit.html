@@ -169,25 +169,28 @@ img{display:block;max-width:100%}
 .stat-val{font-family:'Noto Serif',serif;font-size:1.55rem;color:var(--primary)}
 
 /* ── Scroll card stack ── */
-#stack-container{position:relative}
-.stack-spacer{height:100vh;position:relative}
-.stack-slide{
-  position:sticky;
-  top:calc(var(--hdr) + var(--safe-top) + .75rem);
-  height:72vh;
-  padding:0 1.25rem;
-  max-width:480px;margin:0 auto;
+#stack-container{
+  display:flex;flex-direction:column;align-items:center;
+  padding:50vh 1.25rem 60vh;
+  gap:10vh;
 }
 .stack-card{
-  width:100%;height:100%;
+  position:sticky;
+  top:10vh;
+  height:80vh;
+  width:100%;max-width:480px;
   border-radius:2rem;overflow:hidden;
   box-shadow:0 20px 60px rgba(47,52,48,.15);
   transform-origin:top center;
-  transition:transform .06s linear;
   will-change:transform;
-  position:relative;
+  flex-shrink:0;
 }
-.stack-card img{width:100%;height:100%;object-fit:cover;display:block}
+.stack-card img{
+  width:100%;height:115%;margin-top:-7.5%;
+  object-fit:cover;display:block;
+  transform-origin:center center;
+  will-change:transform;
+}
 .stack-card-overlay{
   position:absolute;bottom:0;left:0;right:0;
   padding:2rem 1.5rem 1.5rem;
@@ -617,10 +620,15 @@ async function renderPortal() {
   document.getElementById('stat-hospital').textContent = CLIENT.hospital  || '—';
   document.getElementById('stat-fecha').textContent    = CLIENT.session_date || '—';
 
+  // For paid clients, load HD photos; for unpaid, load preview (watermarked) photos
+  const photoFolderId = IS_PAID
+    ? (CLIENT.drive_hd_folder_id || CLIENT.drive_preview_folder_id)
+    : CLIENT.drive_preview_folder_id;
+
   // Fetch in parallel
   const [photos, videoFiles] = await Promise.all([
-    CLIENT.drive_preview_folder_id
-      ? fetchFiles(CLIENT.drive_preview_folder_id, 'image').catch(() => [])
+    photoFolderId
+      ? fetchFiles(photoFolderId, 'image').catch(() => [])
       : Promise.resolve([]),
     CLIENT.video_folder_id
       ? fetchFiles(CLIENT.video_folder_id, 'video').catch(() => [])
@@ -746,23 +754,12 @@ function buildScrollStack(photos) {
     : CONFIG.DEMO_PHOTOS;
 
   srcs.forEach((src, i) => {
-    // Spacer provides scroll distance for this card
-    const spacer = document.createElement('div');
-    spacer.className = 'stack-spacer';
-
-    // Sticky slide
-    const slide = document.createElement('div');
-    slide.className = 'stack-slide';
-
-    // Card
     const card = document.createElement('div');
     card.className = 'stack-card';
-    card.dataset.index = i;
-    card.style.zIndex  = i + 1;
 
     const img = document.createElement('img');
     img.src = src;
-    img.alt = `Momento ${i + 1}`;
+    img.alt = `${T('moment')} ${i + 1}`;
     img.loading = i < 2 ? 'eager' : 'lazy';
     img.onerror = () => { img.style.display = 'none'; };
 
@@ -772,43 +769,59 @@ function buildScrollStack(photos) {
 
     card.appendChild(img);
     card.appendChild(overlay);
-    slide.appendChild(card);
-    spacer.appendChild(slide);
-    container.appendChild(spacer);
+    container.appendChild(card);
   });
-
-  // Tail spacer so last card can scroll out
-  const tail = document.createElement('div');
-  tail.style.height = '50vh';
-  container.appendChild(tail);
 
   initScrollAnim(container);
 }
 
 function initScrollAnim(container) {
-  function tick() {
-    const cards   = container.querySelectorAll('.stack-card');
-    const scrollY = window.scrollY;
-    const viewH   = window.innerHeight;
-    // spacer = 100vh, card = 72vh → scroll range per card = 28vh
-    const cardH   = viewH * 0.72;
-    const spacerH = viewH * 1.0;
-    const range   = spacerH - cardH; // ~28vh per card
+  // Skiper34 approach: all cards are sticky siblings in a flex column.
+  // Each new card slides on top of the previous one.
+  // As a card is covered, it slowly rotates & the image counter-rotates.
+  const ANIM_RANGE = 8000; // px of scroll over which rotation/scale plays
+  const MAX_ROT    = 6;    // degrees
+  const MAX_SCALE_REDUCE = 0.12; // card shrinks at most 12%
 
-    cards.forEach((card) => {
-      const spacer = card.closest('.stack-spacer');
-      if (!spacer) return;
-      const top      = spacer.getBoundingClientRect().top + scrollY;
-      const progress = Math.max(0, Math.min(1, (scrollY - top) / range));
-      const scale    = 1 - progress * 0.07;
-      const tY       = -(progress * 40);
-      card.style.transform = `scale(${scale}) translateY(${tY}px)`;
-      card.style.opacity   = progress > 0.92 ? 1 - (progress - 0.92) / 0.08 : 1;
+  let pinYs = [];
+
+  function calcPins() {
+    const vh = window.innerHeight;
+    const containerAbsTop = container.getBoundingClientRect().top + window.scrollY;
+    const paddingTop = vh * 0.5;  // 50vh (matches CSS padding-top)
+    const cardH      = vh * 0.8;  // 80vh (matches CSS height)
+    const gapH       = vh * 0.1;  // 10vh (matches CSS gap)
+    const stickyTop  = vh * 0.1;  // 10vh (matches CSS top)
+
+    container.querySelectorAll('.stack-card').forEach((_, i) => {
+      // scroll position at which card[i]'s top reaches sticky point (10vh)
+      pinYs[i] = containerAbsTop + paddingTop + i * (cardH + gapH) - stickyTop;
     });
   }
 
+  function tick() {
+    const scrollY = window.scrollY;
+    container.querySelectorAll('.stack-card').forEach((card, i) => {
+      const pinY = pinYs[i];
+      if (pinY === undefined || scrollY <= pinY) {
+        card.style.transform = '';
+        const img = card.querySelector('img');
+        if (img) img.style.transform = 'scale(1)';
+        return;
+      }
+      const delta = scrollY - pinY;
+      const t = Math.min(1, delta / ANIM_RANGE);
+      const rot   = t * MAX_ROT;
+      const scale = 1 - t * MAX_SCALE_REDUCE;
+      card.style.transform = `scale(${scale.toFixed(4)}) rotate(${rot.toFixed(3)}deg)`;
+      const img = card.querySelector('img');
+      if (img) img.style.transform = `scale(1.12) rotate(${(-rot).toFixed(3)}deg)`;
+    });
+  }
+
+  requestAnimationFrame(() => { calcPins(); tick(); });
   window.addEventListener('scroll', tick, { passive: true });
-  tick();
+  window.addEventListener('resize', () => { calcPins(); tick(); }, { passive: true });
 }
 
 /* ════════════════════════════════════════
