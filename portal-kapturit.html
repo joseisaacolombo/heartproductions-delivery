@@ -541,10 +541,10 @@ async function renderPortal() {
   renderFilmTab(videoFile);
   initNav();
 
-  // Prints
+  // Prints → Pixieset usando el ID operativo (CLIENT.ID)
   const pb = document.getElementById('prints-btn');
-  if (CLIENT.gallery_printlab_link && CLIENT.gallery_printlab_link !== '#') {
-    pb.href = CLIENT.gallery_printlab_link;
+  if (CLIENT.ID) {
+    pb.href = `https://heartproductions.pixieset.com/${CLIENT.ID}/`;
   }
 
   // Show
