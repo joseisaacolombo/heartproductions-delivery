@@ -5,815 +5,503 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Kapturit · Your Private Gallery</title>
 <meta name="robots" content="noindex,nofollow,noarchive"/>
-<meta property="og:title" content="Kapturit · Your Private Gallery"/>
-<meta property="og:description" content="Your private birth cinematography gallery. Secure access via your unique SMS code."/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-/* ════════════════════════════════════════
-   CONFIGURACIÓN — editar aquí
-════════════════════════════════════════
-  1. GOOGLE_SHEETS_ID   → ID del Google Sheet (la parte larga del URL)
-  2. GOOGLE_API_KEY     → API key de Google Cloud (con Sheets API habilitada)
-  3. SHEET_NAME         → Nombre de la hoja (tab) dentro del spreadsheet
-  4. En el Sheet, las columnas deben estar en este orden exacto:
-     A=codigo | B=nombre_bebe | C=apellido_familia | D=fecha_sesion
-     E=tipo_sesion | F=hospital | G=peso | H=talla
-     I=pagado(si/no) | J=stripe_link | K=drive_preview_folder
-     L=drive_hd_folder | M=pixieset_url | N=paquete_nombre | O=paquete_precio
-*/
-
 :root {
-  --navy:     #1a1f2e;
-  --navy-2:   #242938;
-  --navy-3:   #2d3347;
-  --crimson:  #e8294a;
-  --crimson-d:#c41f38;
-  --teal:     #2ec4b6;
-  --cream:    #faf9f6;
-  --cream-2:  #f2f0eb;
-  --ink:      #1a1f2e;
-  --muted:    #6b7280;
+  --bg:       #f9f9f6;
+  --primary:  #755949;
+  --pri-c:    #fed8c3;
+  --on-pri:   #fff7f5;
+  --secondary:#526352;
+  --sec-c:    #d5e8d2;
+  --surf:     #f9f9f6;
+  --surf-lo:  #f2f4f0;
+  --surf-hi:  #e6e9e5;
+  --surf-hhi: #dfe4df;
+  --on-surf:  #2f3430;
+  --muted:    #5b605c;
+  --outline:  #777c78;
+  --out-var:  #afb3af;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
+  --hdr:      64px;
+  --nav:      72px;
 }
 
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth;background:var(--navy)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
 body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--cream);
-  color:var(--ink);
-  min-height:100vh;
-  padding-bottom:calc(5rem + var(--safe-bot));
+  font-family:'Manrope',sans-serif;
+  background:var(--bg);
+  color:var(--on-surf);
+  min-height:100dvh;
+  padding-top:calc(var(--hdr) + var(--safe-top));
+  padding-bottom:calc(var(--nav) + var(--safe-bot));
   overflow-x:hidden;
 }
-::selection{background:rgba(232,41,74,.15)}
 a{text-decoration:none;color:inherit}
 img{display:block;max-width:100%}
+::selection{background:var(--pri-c);color:#50382a}
 
-/* ── Video section ── */
-#video-section{background:var(--navy);padding:1.75rem 1.25rem}
-#video-section .section-label{color:rgba(255,255,255,.45)}
-.video-wrap{position:relative;width:100%;padding-bottom:56.25%;border-radius:12px;overflow:hidden;background:#000;margin-top:.75rem}
-.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.video-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:.75rem}
-.video-badge svg{opacity:.5}
-
-/* ── Loading screen ── */
+/* ── Loading ── */
 #loading{
-  position:fixed;inset:0;background:var(--navy);
+  position:fixed;inset:0;background:var(--on-surf);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1.5rem;z-index:9000;transition:opacity .5s ease;
 }
 #loading.hidden{opacity:0;pointer-events:none}
-.loader-logo{font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.2em;font-size:1.1rem;color:#fff}
-.loader-logo span{color:var(--crimson)}
-.loader-bar{width:120px;height:1px;background:rgba(255,255,255,.1);border-radius:9999px;overflow:hidden}
-.loader-fill{height:100%;background:var(--crimson);width:0;animation:load 1.8s ease forwards}
+.loader-brand{font-family:'Noto Serif',serif;font-style:italic;font-size:1.15rem;color:var(--pri-c);letter-spacing:.04em}
+.loader-bar{width:100px;height:1px;background:rgba(255,255,255,.12);overflow:hidden;border-radius:9999px}
+.loader-fill{height:100%;background:var(--primary);width:0;animation:load 1.8s ease forwards}
 @keyframes load{to{width:100%}}
 
-/* ── Error screen ── */
+/* ── Error ── */
 #error-screen{
-  display:none;position:fixed;inset:0;background:var(--navy);
-  align-items:center;justify-content:center;flex-direction:column;
-  gap:1.25rem;padding:2rem;text-align:center;z-index:8000;
+  display:none;position:fixed;inset:0;background:var(--on-surf);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;padding:2rem;text-align:center;z-index:8000;
 }
 #error-screen.show{display:flex}
-.err-code{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35)}
-.err-title{font-family:'DM Serif Display',serif;font-size:2rem;color:#fff}
-.err-body{font-size:.82rem;color:rgba(255,255,255,.45);font-weight:300;max-width:300px;line-height:1.7}
+.err-label{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.err-title{font-family:'Noto Serif',serif;font-size:2rem;color:#fff}
+.err-body{font-size:.82rem;color:rgba(255,255,255,.4);max-width:280px;line-height:1.7}
 
-/* ── Top bar ── */
+/* ── Header ── */
 #topbar{
-  position:sticky;top:0;z-index:500;
-  background:rgba(26,31,46,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  padding:calc(.85rem + var(--safe-top)) 1.25rem .85rem;
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  height:calc(var(--hdr) + var(--safe-top));
+  background:rgba(249,249,246,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(119,124,120,.1);
   display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:calc(.85rem + var(--safe-top)) 1.25rem .85rem;
 }
-.tb-logo{font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.18em;font-size:.9rem;color:#fff}
-.tb-logo span{color:var(--crimson)}
-.tb-id{text-align:right}
-.tb-id-label{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block}
-.tb-id-code{font-family:monospace;font-size:.75rem;color:var(--teal);letter-spacing:.1em}
+.tb-brand{font-family:'Noto Serif',serif;font-style:italic;font-size:1.05rem;color:var(--on-surf);letter-spacing:-.01em}
+.tb-id-wrap{text-align:right;border-left:1px solid rgba(119,124,120,.18);padding-left:.85rem}
+.tb-id-label{display:block;font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--outline);margin-bottom:.1rem}
+.tb-id-code{font-weight:700;font-size:.7rem;color:var(--primary);letter-spacing:.12em}
 
-/* ── Sections ── */
-.section{padding:1.75rem 1.25rem}
-.section+.section{padding-top:.5rem}
+/* ── Layout ── */
+#app{display:none}
+.inner{max-width:480px;margin:0 auto;padding:1.5rem 1.25rem}
+.gap{margin-bottom:2.25rem}
 
-.section-label{
-  font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;
-  color:var(--crimson);font-weight:500;margin-bottom:.5rem;
+/* ── Section label ── */
+.sec-lbl{
   display:flex;align-items:center;gap:.5rem;
+  font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;font-weight:700;
+  color:var(--primary);margin-bottom:.9rem;
 }
-.section-label::before{content:'';width:1rem;height:1px;background:var(--crimson)}
+.sec-lbl svg{width:12px;height:12px;flex-shrink:0}
 
-/* ── Hero card (baby info) ── */
-#hero-card{
-  margin:1.25rem;
-  background:var(--navy);
-  border-radius:1.5rem;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.06);
-  box-shadow:0 20px 40px rgba(26,31,46,.25);
+/* ── Hero video ── */
+.video-thumb{
+  position:relative;aspect-ratio:16/9;
+  border-radius:1.75rem;overflow:hidden;
+  background:var(--surf-hhi);
+  box-shadow:0 20px 60px rgba(47,52,48,.14);
+  cursor:pointer;
 }
-.hero-cover{
-  width:100%;height:200px;
-  background:linear-gradient(135deg,var(--navy-2),var(--navy-3));
-  position:relative;overflow:hidden;
+.video-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;display:block}
+.video-thumb:hover img{transform:scale(1.03)}
+.play-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(47,52,48,.15);
 }
-.hero-cover-img{width:100%;height:100%;object-fit:cover;opacity:.55;transition:opacity .5s}
-.hero-cover-gradient{
-  position:absolute;inset:0;
-  background:linear-gradient(to top,var(--navy) 0%,transparent 60%);
-}
-.hero-badge{
-  position:absolute;top:1rem;left:1rem;
-  background:rgba(255,255,255,.08);backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:9999px;
-  padding:.3rem .85rem;
-  font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.8);
-}
-/* Estado badge */
-.state-badge{
-  position:absolute;top:1rem;right:1rem;
-  border-radius:9999px;padding:.3rem .85rem;
-  font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;
-}
-.state-badge.paid{background:rgba(46,196,182,.2);border:1px solid rgba(46,196,182,.35);color:var(--teal)}
-.state-badge.unpaid{background:rgba(232,41,74,.15);border:1px solid rgba(232,41,74,.3);color:var(--crimson)}
-
-.hero-body{padding:1.25rem}
-.hero-name{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;margin-bottom:.25rem;line-height:1.15}
-.hero-meta{font-size:.7rem;color:rgba(255,255,255,.45);font-weight:300;letter-spacing:.05em}
-
-.hero-stats{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:.75rem;padding:1.25rem;border-top:1px solid rgba(255,255,255,.06);
-}
-.hstat{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.35rem}
-.hstat-icon{
-  width:2.25rem;height:2.25rem;border-radius:.6rem;
-  background:rgba(255,255,255,.05);
+.play-btn-el{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(249,249,246,.92);backdrop-filter:blur(8px);
+  border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  transition:transform .2s ease;
 }
-.hstat-icon svg{width:1rem;height:1rem;stroke:var(--teal);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.hstat-label{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.35)}
-.hstat-val{font-size:.8rem;font-weight:500;color:#fff}
+.play-btn-el:active{transform:scale(.9)}
+.play-btn-el svg{width:34px;height:34px;fill:var(--primary);margin-left:4px}
+.video-meta{display:flex;justify-content:space-between;align-items:center;padding:.55rem .1rem 0}
+.vid-pill{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:.3rem .7rem;border-radius:9999px;
+  background:var(--surf-hi);color:var(--muted);
+}
+.vid-pill svg{width:10px;height:10px;opacity:.5;flex-shrink:0}
 
-/* ── Photo stack (Skiper-style) ── */
-#photo-stack-section{background:var(--cream)}
-.stack-wrap{
-  position:relative;height:360px;
-  margin:0 1.25rem;
-  display:flex;align-items:center;justify-content:center;
+/* ── Buttons ── */
+.btn-p,.btn-s,.btn-o{
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  padding:1rem 1.25rem;border-radius:9999px;
+  font-family:'Manrope',sans-serif;font-weight:700;font-size:.9rem;
+  border:none;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;
+  width:100%;text-decoration:none;
+}
+.btn-p{background:var(--primary);color:var(--on-pri);box-shadow:0 8px 24px rgba(117,89,73,.22)}
+.btn-p:active{transform:scale(.97);box-shadow:none}
+.btn-s{background:var(--surf-hi);color:var(--muted)}
+.btn-s:active{transform:scale(.97)}
+.btn-o{background:transparent;color:var(--primary);border:2px solid var(--primary)}
+.btn-o:active{transform:scale(.97)}
+.btn-icon{width:20px;height:20px;flex-shrink:0}
+.cta-stack{display:flex;flex-direction:column;gap:.75rem}
+
+/* ── Unpaid card ── */
+.unpaid-c{
+  background:var(--surf-hi);border-radius:1.5rem;
+  padding:1.5rem;text-align:center;margin-bottom:.75rem;
+}
+.unpaid-pkg{font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--outline)}
+.unpaid-price{font-family:'Noto Serif',serif;font-size:2.75rem;color:var(--primary);margin:.4rem 0}
+.unpaid-desc{font-size:.82rem;color:var(--muted);line-height:1.65;max-width:260px;margin:0 auto}
+
+/* ── Baby stats ── */
+.baby-stats{
+  padding:2.5rem 0;
+  border-top:1px solid rgba(119,124,120,.12);
+  border-bottom:1px solid rgba(119,124,120,.12);
+  text-align:center;
+}
+.baby-name{
+  font-family:'Noto Serif',serif;font-size:3.25rem;
+  color:var(--on-surf);letter-spacing:-.02em;line-height:1.1;margin-bottom:2rem;
+}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem 1rem;max-width:300px;margin:0 auto}
+.stat-lbl{font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--outline);display:block;margin-bottom:.3rem}
+.stat-val{font-family:'Noto Serif',serif;font-size:1.55rem;color:var(--primary)}
+
+/* ── Scroll card stack ── */
+#stack-container{position:relative}
+.stack-spacer{height:80vh;position:relative}
+.stack-slide{
+  position:sticky;
+  top:calc(var(--hdr) + var(--safe-top) + .75rem);
+  height:calc(100dvh - var(--hdr) - var(--nav) - var(--safe-top) - var(--safe-bot) - 1.5rem);
+  padding:0 1.25rem;
+  max-width:480px;margin:0 auto;
 }
 .stack-card{
-  position:absolute;
-  width:calc(100% - 2.5rem);max-width:320px;
-  height:320px;border-radius:1.5rem;overflow:hidden;
-  box-shadow:0 20px 40px rgba(26,31,46,.15);
-  cursor:grab;user-select:none;
+  width:100%;height:100%;
+  border-radius:2rem;overflow:hidden;
+  box-shadow:0 20px 60px rgba(47,52,48,.15);
+  transform-origin:top center;
+  transition:transform .08s linear;
   will-change:transform;
-  background:var(--cream-2);
+  position:relative;
 }
-.stack-card img{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block}
+.stack-card img{width:100%;height:100%;object-fit:cover;display:block}
 .stack-card-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(26,31,46,.6) 0%,transparent 50%);
-  display:flex;align-items:flex-end;padding:1.25rem;
+  position:absolute;bottom:0;left:0;right:0;
+  padding:2rem 1.5rem 1.5rem;
+  background:linear-gradient(to top,rgba(47,52,48,.45),transparent);
 }
-/* Watermark overlay for unpaid state */
-.wm-overlay{
-  position:absolute;inset:0;
+.stack-card-num{
+  font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.65);font-weight:600;
+}
+
+/* ── Prints ── */
+.prints-card{
+  background:var(--surf-lo);border-radius:2rem;
+  padding:2rem 1.5rem;text-align:center;
+  border:1px solid rgba(119,124,120,.08);
+}
+.prints-icons{display:flex;justify-content:center;gap:1rem;margin-bottom:1.5rem;opacity:.65}
+.pi{
+  background:var(--surf-hi);border-radius:.6rem;
   display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
+  box-shadow:0 2px 8px rgba(47,52,48,.06);
 }
-.wm-text{
-  font-family:'DM Sans',sans-serif;font-weight:500;
-  font-size:1.1rem;letter-spacing:.25em;text-transform:uppercase;
-  color:rgba(255,255,255,.35);
-  transform:rotate(-25deg);
-  text-shadow:0 1px 3px rgba(0,0,0,.3);
-  white-space:nowrap;
-}
-.stack-caption{font-size:.65rem;color:rgba(255,255,255,.75);letter-spacing:.1em}
-
-.stack-hint{
-  text-align:center;margin-top:.75rem;
-  font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
-  display:flex;align-items:center;justify-content:center;gap:.5rem;
-}
-.stack-counter{
-  text-align:center;margin-top:.5rem;
-  font-size:.7rem;color:var(--muted);
-}
-
-/* Swipe dots */
-.stack-dots{display:flex;justify-content:center;gap:.4rem;margin-top:.75rem}
-.stack-dot{width:.4rem;height:.4rem;border-radius:50%;background:rgba(26,31,46,.15);transition:background .3s}
-.stack-dot.active{background:var(--crimson)}
-
-/* ── Estado A: botones de descarga ── */
-#state-paid{display:none}
-.download-grid{display:flex;flex-direction:column;gap:.75rem}
-.dl-btn{
-  display:flex;align-items:center;gap:1rem;
-  padding:1.1rem 1.25rem;border-radius:1rem;
-  text-decoration:none;
-  transition:transform .2s,box-shadow .2s;
-  active:scale(.97);
-}
-.dl-btn:active{transform:scale(.97)}
-.dl-btn-icon{
-  width:2.75rem;height:2.75rem;border-radius:.75rem;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.dl-btn-icon svg{width:1.2rem;height:1.2rem;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.dl-btn-copy{}
-.dl-btn-title{font-size:.82rem;font-weight:500;margin-bottom:.15rem}
-.dl-btn-sub{font-size:.68rem;font-weight:300;opacity:.65}
-
-.dl-photos{
-  background:linear-gradient(135deg,rgba(46,196,182,.12),rgba(46,196,182,.06));
-  border:1px solid rgba(46,196,182,.25);
-}
-.dl-photos .dl-btn-icon{background:rgba(46,196,182,.15);border:1px solid rgba(46,196,182,.25)}
-.dl-photos .dl-btn-icon svg{stroke:var(--teal)}
-.dl-photos .dl-btn-title{color:var(--ink)}
-
-.dl-video{
-  background:linear-gradient(135deg,rgba(232,41,74,.1),rgba(232,41,74,.05));
-  border:1px solid rgba(232,41,74,.2);
-}
-.dl-video .dl-btn-icon{background:rgba(232,41,74,.12);border:1px solid rgba(232,41,74,.2)}
-.dl-video .dl-btn-icon svg{stroke:var(--crimson)}
-.dl-video .dl-btn-title{color:var(--ink)}
-
-.dl-prints{
-  background:var(--cream-2);
-  border:1px solid rgba(26,31,46,.08);
-}
-.dl-prints .dl-btn-icon{background:rgba(26,31,46,.06);border:1px solid rgba(26,31,46,.1)}
-.dl-prints .dl-btn-icon svg{stroke:var(--ink)}
-.dl-prints .dl-btn-title{color:var(--ink)}
-
-/* ── Estado B: paquetes de venta ── */
-#state-unpaid{display:none}
-
-.unpaid-intro{
-  background:var(--navy);
-  border-radius:1.25rem;
-  padding:1.5rem;
-  margin-bottom:1.25rem;
-  border:1px solid rgba(232,41,74,.2);
-}
-.unpaid-intro-title{font-family:'DM Serif Display',serif;font-size:1.2rem;color:#fff;margin-bottom:.5rem}
-.unpaid-intro-body{font-size:.78rem;color:rgba(255,255,255,.5);font-weight:300;line-height:1.7}
-
-/* Package cards */
-.pkg-scroll{
-  display:flex;gap:.75rem;overflow-x:auto;
-  padding-bottom:.75rem;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
-}
-.pkg-scroll::-webkit-scrollbar{display:none}
-
-.pkg-c{
-  flex-shrink:0;width:240px;
-  background:var(--navy-2);
-  border:1px solid rgba(255,255,255,.07);
-  border-radius:1.25rem;padding:1.5rem;
-  display:flex;flex-direction:column;
-  scroll-snap-align:start;
-  position:relative;overflow:hidden;
-  transition:border-color .25s;
-}
-.pkg-c.featured{
-  border-color:rgba(232,41,74,.35);
-  background:var(--navy-3);
-}
-.pkg-c.featured::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--crimson),var(--teal));
-}
-.pkg-rec{
-  position:absolute;top:.85rem;right:.85rem;
-  background:var(--crimson);color:#fff;
-  font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;
-  padding:.2rem .6rem;border-radius:9999px;font-weight:600;
-}
-.pkg-tier{font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;color:var(--teal);margin-bottom:.5rem}
-.pkg-name{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#fff;margin-bottom:.5rem;line-height:1.2;padding-right:3rem}
-.pkg-price{font-size:1.5rem;font-weight:500;color:var(--crimson);margin-bottom:1rem;line-height:1}
-.pkg-price span{font-size:.7rem;color:rgba(255,255,255,.4);font-weight:300}
-.pkg-features{list-style:none;flex-grow:1;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem}
-.pkg-features li{
-  display:flex;align-items:flex-start;gap:.5rem;
-  font-size:.72rem;color:rgba(255,255,255,.6);font-weight:300;line-height:1.4;
-}
-.pkg-features li::before{
-  content:'';display:block;flex-shrink:0;
-  width:.3rem;height:.3rem;border-radius:50%;
-  background:var(--crimson);margin-top:.45rem;
-}
-.pkg-btn{
-  display:block;text-align:center;
-  padding:.85rem;border-radius:9999px;
-  font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;font-weight:500;
-  transition:all .25s;text-decoration:none;
-  border:none;font-family:'DM Sans',sans-serif;cursor:pointer;
-  width:100%;
-}
-.pkg-btn-outline{border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.65);background:transparent}
-.pkg-btn-outline:hover{border-color:rgba(255,255,255,.4);color:#fff}
-.pkg-btn-solid{background:var(--crimson);color:#fff}
-.pkg-btn-solid:hover{background:var(--crimson-d)}
-.pkg-btn:active{transform:scale(.97)}
-
-/* Trust bar */
-.trust-bar{
-  display:flex;align-items:center;justify-content:center;gap:.5rem;
-  margin-top:1rem;
-  font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);
-}
-.trust-bar svg{width:.9rem;height:.9rem;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round}
+.pi svg{width:20px;height:20px;stroke:var(--outline);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.pi-sm{width:52px;height:66px}
+.pi-md{width:68px;height:68px}
+.pi-sm:first-child{transform:rotate(-6deg)}
+.pi-sm:last-child{transform:rotate(6deg)}
+.prints-title{font-family:'Noto Serif',serif;font-size:1.5rem;margin-bottom:.5rem}
+.prints-desc{font-size:.82rem;color:var(--muted);line-height:1.65;max-width:270px;margin:0 auto 1.5rem}
+.prints-foot{margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(119,124,120,.12);text-align:center}
+.prints-foot-title{font-family:'Noto Serif',serif;font-style:italic;color:var(--primary);font-size:1.05rem;margin-bottom:.3rem}
+.prints-foot-sub{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--outline)}
 
 /* ── Bottom nav ── */
 #bottom-nav{
   position:fixed;bottom:0;left:0;right:0;z-index:500;
-  background:rgba(26,31,46,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid rgba(255,255,255,.06);
+  height:calc(var(--nav) + var(--safe-bot));
+  background:rgba(249,249,246,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(119,124,120,.1);
+  border-radius:1.25rem 1.25rem 0 0;
+  box-shadow:0 -4px 40px rgba(47,52,48,.06);
   display:flex;justify-content:space-around;align-items:center;
-  padding:.75rem 1rem calc(.75rem + var(--safe-bot));
+  padding:.6rem 1rem calc(.6rem + var(--safe-bot));
 }
-.nav-item{
-  display:flex;flex-direction:column;align-items:center;gap:.3rem;
-  flex:1;cursor:pointer;transition:opacity .2s;
-  background:none;border:none;font-family:'DM Sans',sans-serif;
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:.28rem;
+  background:none;border:none;cursor:pointer;
+  color:var(--outline);opacity:.5;
+  transition:opacity .2s ease,color .2s ease;
+  padding:.25rem .75rem;
 }
-.nav-item.active .nav-icon{color:var(--crimson)}
-.nav-item.active .nav-label{color:rgba(255,255,255,.9)}
-.nav-icon{color:rgba(255,255,255,.35);transition:color .2s}
-.nav-icon svg{width:1.35rem;height:1.35rem;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.nav-label{font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.35);transition:color .2s}
+.nav-btn svg{width:22px;height:22px}
+.nav-lbl{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+.nav-btn.active{color:var(--primary);opacity:1}
 
-/* ── Toast ── */
-#toast{
-  position:fixed;bottom:5.5rem;left:50%;
-  transform:translateX(-50%) translateY(60px);
-  background:var(--navy-2);color:#fff;
-  padding:.75rem 1.5rem;border-radius:9999px;
-  font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;
-  border:1px solid rgba(232,41,74,.3);
-  z-index:9999;opacity:0;pointer-events:none;white-space:nowrap;
-  transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .4s;
+/* ── Tabs ── */
+.tab{display:none}
+.tab.active{display:block}
+
+/* ── Film tab ── */
+.film-wrap{aspect-ratio:16/9;border-radius:1.75rem;overflow:hidden;background:#000;box-shadow:0 20px 60px rgba(47,52,48,.15)}
+.film-wrap iframe{width:100%;height:100%;border:0;display:block}
+.film-none{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;background:var(--surf-hi);border-radius:1.75rem;gap:.75rem;
 }
-#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.film-none p{font-size:.85rem;color:var(--muted)}
 
-/* ── Secciones de nav ── */
-.nav-section{display:none}
-.nav-section.active{display:block}
-
-/* ── Animaciones ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both}
-.fu1{animation-delay:.05s}.fu2{animation-delay:.1s}.fu3{animation-delay:.15s}.fu4{animation-delay:.2s}
-
-/* ── Utilities ── */
-.divider{height:1px;background:rgba(26,31,46,.07);margin:0 1.25rem}
-.dark-section{background:var(--navy)}
-.navy-section{background:var(--navy-2)}
+/* ── Support tab ── */
+.support-card{background:var(--surf-hi);border-radius:1.75rem;padding:2rem 1.5rem;text-align:center}
+.support-title{font-family:'Noto Serif',serif;font-size:1.4rem;margin-bottom:.5rem}
+.support-sub{font-size:.82rem;color:var(--muted);line-height:1.65;margin-bottom:1.5rem}
+.support-btns{display:flex;flex-direction:column;gap:.75rem}
 </style>
 </head>
 <body>
 
-<!-- ════════ LOADING ════════ -->
+<!-- Loading -->
 <div id="loading">
-  <div class="loader-logo">KAPTUR<span>IT</span></div>
+  <div class="loader-brand">The Digital Heirloom</div>
   <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
 
-<!-- ════════ ERROR ════════ -->
+<!-- Error -->
 <div id="error-screen">
-  <div class="err-code">Private Access Portal</div>
-  <div class="err-title">Invalid Code</div>
+  <div class="err-label">Private Access Portal</div>
+  <div class="err-title">Invalid Link</div>
   <div class="err-body">This link doesn't match any active session. Please check the SMS you received or contact your photographer.</div>
 </div>
 
-<!-- ════════ TOP BAR ════════ -->
+<!-- Header -->
 <header id="topbar">
-  <div class="tb-logo">KAPTUR<span>IT</span></div>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <button id="portal-lang-btn" onclick="portalToggleLang()"
-      style="background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);border-radius:9999px;padding:.28rem .7rem;font-size:.55rem;letter-spacing:.18em;cursor:pointer;font-family:inherit;transition:all .25s">
-      ES
-    </button>
-    <div class="tb-id">
-      <span class="tb-id-label" data-i18n="portal_id">Portal ID</span>
-      <span class="tb-id-code" id="tb-code">—</span>
-    </div>
+  <div class="tb-brand">The Digital Heirloom</div>
+  <div class="tb-id-wrap">
+    <span class="tb-id-label">Private Portal ID</span>
+    <span class="tb-id-code" id="tb-code">—</span>
   </div>
 </header>
 
-<!-- ════════ MAIN ════════ -->
-<main id="app" style="display:none">
+<!-- App -->
+<div id="app">
 
-  <!-- ── Sección HOME ── -->
-  <div id="sec-home" class="nav-section active">
+  <!-- ══ GALLERY TAB ══ -->
+  <div id="tab-gallery" class="tab active">
+    <div class="inner">
 
-    <!-- Hero card -->
-    <div id="hero-card" class="fade-up">
-      <div class="hero-cover">
-        <img id="cover-img" class="hero-cover-img" src="" alt="Sesión" loading="eager"/>
-        <div class="hero-cover-gradient"></div>
-        <div class="hero-badge" id="session-type-badge">Sesión</div>
-        <div class="state-badge" id="state-badge">—</div>
-      </div>
-      <div class="hero-body">
-        <div class="hero-name" id="baby-name">—</div>
-        <div class="hero-meta" id="session-meta">—</div>
-      </div>
-      <div class="hero-stats">
-        <div class="hstat">
-          <div class="hstat-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/><path d="M19 21v-1a7 7 0 0 0-14 0v1"/></svg>
+      <!-- Hero: video -->
+      <div class="gap">
+        <div class="sec-lbl">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Tu Película
+        </div>
+        <div class="video-thumb" id="video-thumb">
+          <img id="video-cover" src="" alt="Portada"/>
+          <div class="play-overlay" id="play-overlay">
+            <button class="play-btn-el" id="play-btn" aria-label="Reproducir película">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </button>
           </div>
-          <div class="hstat-label">Weight</div>
-          <div class="hstat-val" id="stat-peso">—</div>
         </div>
-        <div class="hstat">
-          <div class="hstat-icon">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="video-meta">
+          <span class="vid-pill" id="vid-pill" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span id="vid-pill-text">Vista previa · marca de agua</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div id="cta-wrap" class="cta-stack gap"></div>
+
+      <!-- Baby stats -->
+      <div class="baby-stats gap">
+        <div class="baby-name" id="baby-name">—</div>
+        <div class="stats-grid">
+          <div><span class="stat-lbl">Peso</span><span class="stat-val" id="stat-peso">—</span></div>
+          <div><span class="stat-lbl">Talla</span><span class="stat-val" id="stat-talla">—</span></div>
+          <div><span class="stat-lbl">Hospital</span><span class="stat-val" id="stat-hospital">—</span></div>
+          <div><span class="stat-lbl">Fecha</span><span class="stat-val" id="stat-fecha">—</span></div>
+        </div>
+      </div>
+
+      <!-- Moments label -->
+      <div class="sec-lbl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Momentos
+      </div>
+    </div><!-- /inner -->
+
+    <!-- Scroll card stack (full bleed) -->
+    <div id="stack-container"></div>
+
+    <!-- Prints -->
+    <div class="inner" style="padding-top:2rem">
+      <div class="prints-card">
+        <div class="prints-icons">
+          <div class="pi pi-sm">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
-          <div class="hstat-label">Size</div>
-          <div class="hstat-val" id="stat-talla">—</div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-icon">
-            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <div class="pi pi-md">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           </div>
-          <div class="hstat-label">Hospital</div>
-          <div class="hstat-val" id="stat-hospital">—</div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-icon">
-            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div class="pi pi-sm">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </div>
-          <div class="hstat-label">Date</div>
-          <div class="hstat-val" id="stat-fecha">—</div>
         </div>
-      </div>
-    </div>
-
-    <!-- Photo stack -->
-    <div id="photo-stack-section" class="section">
-      <div class="section-label">Your Moments</div>
-      <div class="stack-wrap" id="stack-wrap">
-        <!-- Cards generadas por JS -->
-      </div>
-      <div class="stack-hint">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        Swipe to see more
-      </div>
-      <div class="stack-dots" id="stack-dots"></div>
-    </div>
-
-    <!-- Video section -->
-    <div id="video-section" class="section" style="display:none">
-      <div class="section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        Your Film
-      </div>
-      <div class="video-wrap">
-        <iframe id="video-player" allowfullscreen allow="autoplay"></iframe>
-      </div>
-      <div class="video-badge">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span id="video-badge-text">Preview · watermark</span>
-      </div>
-    </div>
-
-    <!-- CTA principal -->
-    <div class="section" style="background:var(--cream)">
-      <!-- Estado A: ya compró -->
-      <div id="state-paid">
-        <div class="section-label">Your Collection</div>
-        <div class="download-grid" id="download-grid">
-          <!-- generado por JS -->
-        </div>
-      </div>
-
-      <!-- Estado B: no compró -->
-      <div id="state-unpaid">
-        <div class="section-label">Get Your Collection</div>
-        <div class="unpaid-intro">
-          <div class="unpaid-intro-title">These are your photos.</div>
-          <div class="unpaid-intro-body">Select the package that best preserves this moment. Full high-resolution download will be available immediately upon purchase confirmation.</div>
-        </div>
-        <!-- Package scroll -->
-        <div class="pkg-scroll" id="pkg-scroll">
-          <!-- generado por JS -->
-        </div>
-        <div class="trust-bar">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Secure payment via Stripe · No account required
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /sec-home -->
-
-  <!-- ── Sección GALERÍA ── -->
-  <div id="sec-gallery" class="nav-section">
-    <div class="section dark-section" style="min-height:calc(100vh - 8rem)">
-      <div class="section-label" style="color:rgba(232,41,74,.9)">Preview</div>
-      <div id="gallery-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.75rem">
-        <!-- generado por JS -->
-      </div>
-      <p id="gallery-wm-note" style="display:none;text-align:center;margin-top:1.5rem;font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.1em;line-height:1.8">
-        Photos have a watermark in preview.<br/>Purchase your collection for the full version.
-      </p>
-    </div>
-  </div>
-
-  <!-- ── Sección COMPRAR (solo Estado B) ── -->
-  <div id="sec-shop" class="nav-section">
-    <div class="section dark-section" style="min-height:calc(100vh - 8rem)">
-      <div class="section-label" style="color:rgba(232,41,74,.9)">Collections</div>
-      <div style="margin-top:.75rem;display:flex;flex-direction:column;gap:.85rem" id="shop-pkg-list">
-        <!-- generado por JS — versión vertical expandida -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Sección SOPORTE ── -->
-  <div id="sec-support" class="nav-section">
-    <div class="section" style="min-height:calc(100vh - 8rem)">
-      <div class="section-label">Support</div>
-      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.75rem">
-
-        <!--
-          INSTRUCCIÓN: Reemplaza KAPTURIT_PHONE con el número real de Kapturit
-          Formato: solo dígitos, sin +1, sin guiones. Ej: 2105550123
-          El sms: link abre la app de mensajes del teléfono con el número pre-llenado.
-        -->
-        <a href="sms:KAPTURIT_PHONE&body=Hi%2C%20I%20have%20a%20question%20about%20my%20gallery."
-           style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;background:rgba(46,196,182,.06);border:1px solid rgba(46,196,182,.2);border-radius:1rem;text-decoration:none">
-          <div style="width:2.5rem;height:2.5rem;border-radius:.75rem;background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div>
-            <div style="font-size:.82rem;font-weight:500;color:var(--ink)" data-i18n="sms_title">Send us a text</div>
-            <div style="font-size:.68rem;color:var(--muted);font-weight:300" data-i18n="sms_sub">We reply within 24 hours</div>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" style="margin-left:auto;opacity:.6"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <h3 class="prints-title">Conserva el Momento</h3>
+        <p class="prints-desc">Transforma tus fotos favoritas en piezas físicas únicas: álbumes artesanales, lienzos y marcos de alta calidad.</p>
+        <a id="prints-btn" href="#" class="btn-o" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Pedir Impresiones
         </a>
-
-        <div style="padding:1.25rem;background:var(--cream-2);border-radius:1rem;border:1px solid rgba(26,31,46,.07)">
-          <div style="font-size:.7rem;font-weight:500;color:var(--ink);margin-bottom:.75rem;letter-spacing:.05em">Frequently Asked Questions</div>
-          <div style="display:flex;flex-direction:column;gap:.6rem">
-            <details style="border-bottom:1px solid rgba(26,31,46,.07);padding-bottom:.6rem">
-              <summary style="font-size:.75rem;color:var(--ink);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
-                When will my photos be ready?
-                <span style="color:var(--crimson);font-size:1rem">+</span>
-              </summary>
-              <p style="font-size:.72rem;color:var(--muted);margin-top:.5rem;font-weight:300;line-height:1.65">The editing process takes 5–10 business days. You will receive an SMS as soon as your gallery is ready.</p>
-            </details>
-            <details style="border-bottom:1px solid rgba(26,31,46,.07);padding-bottom:.6rem">
-              <summary style="font-size:.75rem;color:var(--ink);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
-                Can I share my photos?
-                <span style="color:var(--crimson);font-size:1rem">+</span>
-              </summary>
-              <p style="font-size:.72rem;color:var(--muted);margin-top:.5rem;font-weight:300;line-height:1.65">Yes. Once downloaded, you have an unlimited personal-use license to share on social media and with family.</p>
-            </details>
-            <details>
-              <summary style="font-size:.75rem;color:var(--ink);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
-                How long is my gallery available?
-                <span style="color:var(--crimson);font-size:1rem">+</span>
-              </summary>
-              <p style="font-size:.72rem;color:var(--muted);margin-top:.5rem;font-weight:300;line-height:1.65">Your gallery remains active for 12 months. We recommend downloading your files to a safe location.</p>
-            </details>
-          </div>
-        </div>
-
-        <div style="text-align:center;margin-top:1rem">
-          <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem">Kapturit Studio</div>
-          <div style="font-size:.65rem;color:var(--muted);font-weight:300">San Antonio &amp; Austin, TX</div>
+        <div class="prints-foot">
+          <p class="prints-foot-title">Gracias por confiar en Kapturit</p>
+          <p class="prints-foot-sub">Ha sido un honor capturar tu historia</p>
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-gallery -->
 
-</main>
+  <!-- ══ FILM TAB ══ -->
+  <div id="tab-film" class="tab">
+    <div class="inner">
+      <div class="sec-lbl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Tu Película
+      </div>
+      <div id="film-wrap" class="film-wrap"></div>
+      <div class="video-meta" style="margin-top:.6rem">
+        <span class="vid-pill" id="film-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="film-pill-text">Vista previa</span>
+        </span>
+      </div>
+    </div>
+  </div><!-- /tab-film -->
 
-<!-- ════════ BOTTOM NAV ════════ -->
+  <!-- ══ SUPPORT TAB ══ -->
+  <div id="tab-support" class="tab">
+    <div class="inner">
+      <div class="sec-lbl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Soporte
+      </div>
+      <div class="support-card">
+        <div class="support-title">¿Tienes alguna pregunta?</div>
+        <div class="support-sub">Respondemos en menos de 24 hrs. Escríbenos por SMS o correo.</div>
+        <div class="support-btns">
+          <a href="sms:+1" class="btn-p">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Enviar SMS
+          </a>
+          <a href="mailto:hello@kapturit.com" class="btn-s">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Correo electrónico
+          </a>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-support -->
+
+</div><!-- /app -->
+
+<!-- Bottom nav -->
 <nav id="bottom-nav">
-  <button class="nav-item active" data-section="home" onclick="navigate('home',this)">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </div>
-    <div class="nav-label">Home</div>
+  <button class="nav-btn active" data-tab="tab-gallery">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span class="nav-lbl">Gallery</span>
   </button>
-  <button class="nav-item" data-section="gallery" onclick="navigate('gallery',this)">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    </div>
-    <div class="nav-label">Gallery</div>
+  <button class="nav-btn" data-tab="tab-film">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    <span class="nav-lbl">Film</span>
   </button>
-  <button class="nav-item" id="nav-shop" data-section="shop" onclick="navigate('shop',this)" style="display:none">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-    </div>
-    <div class="nav-label">Shop</div>
-  </button>
-  <button class="nav-item" data-section="support" onclick="navigate('support',this)">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </div>
-    <div class="nav-label">Support</div>
+  <button class="nav-btn" data-tab="tab-support">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-lbl">Support</span>
   </button>
 </nav>
 
-<div id="toast"></div>
-
-<!-- ════════ SCRIPTS ════════ -->
 <script>
-
-// ── Portal i18n ──────────────────────────────────────────────────
-const PORTAL_STRINGS = {
-  en: {
-    portal_id:      'Portal ID',
-    sec_moments:    'Your Moments',
-    sec_collection: 'Your Collection',
-    sec_get:        'Get Your Collection',
-    sec_preview:    'Preview',
-    sec_collections:'Collections',
-    sec_support:    'Support',
-    state_paid:     '✓ Collection Purchased',
-    state_preview:  'Preview',
-    swipe_hint:     'Swipe to see more',
-    wm_note:        'Photos have a watermark in preview.<br/>Purchase your collection for the full version.',
-    trust:          'Secure payment via Stripe · No account required',
-    nav_home:       'Home',
-    nav_gallery:    'Gallery',
-    nav_shop:       'Shop',
-    nav_support:    'Support',
-    faq_title:      'Frequently Asked Questions',
-    sms_title:      'Send us a text',
-    sms_sub:        'We reply within 24 hours',
-    err_label:      'Private Access Portal',
-    err_title:      'Invalid Code',
-    err_body:       "This link doesn't match any active session. Please check the SMS you received or contact your photographer.",
-  },
-  es: {
-    portal_id:      'ID del Portal',
-    sec_moments:    'Tus Momentos',
-    sec_collection: 'Tu Colección',
-    sec_get:        'Adquiere Tu Colección',
-    sec_preview:    'Vista Previa',
-    sec_collections:'Colecciones',
-    sec_support:    'Soporte',
-    state_paid:     '✓ Colección Adquirida',
-    state_preview:  'Vista Previa',
-    swipe_hint:     'Desliza para ver más',
-    wm_note:        'Las fotos tienen marca de agua en la vista previa.<br/>Adquiere tu colección para la versión completa.',
-    trust:          'Pago seguro vía Stripe · Sin cuenta requerida',
-    nav_home:       'Inicio',
-    nav_gallery:    'Galería',
-    nav_shop:       'Comprar',
-    nav_support:    'Soporte',
-    faq_title:      'Preguntas Frecuentes',
-    sms_title:      'Escríbenos un mensaje',
-    sms_sub:        'Respondemos en menos de 24 hrs',
-    err_label:      'Portal de Acceso Privado',
-    err_title:      'Código No Válido',
-    err_body:       'Este enlace no corresponde a ninguna sesión activa. Verifica el SMS que recibiste o contacta a tu fotógrafo.',
-  }
-};
-
-let portalLang = 'en';
-
-function portalToggleLang() {
-  portalLang = portalLang === 'en' ? 'es' : 'en';
-  applyPortalLang(portalLang);
-}
-
-function applyPortalLang(lang) {
-  const s = PORTAL_STRINGS[lang];
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (s[key] !== undefined) el.innerHTML = s[key];
-  });
-  const btn = document.getElementById('portal-lang-btn');
-  if (btn) btn.textContent = lang === 'en' ? 'ES' : 'EN';
-  document.documentElement.lang = lang === 'en' ? 'en' : 'es';
-  document.title = lang === 'en'
-    ? 'Kapturit · Your Private Gallery'
-    : 'Kapturit · Tu Galería Privada';
-}
-
 /* ════════════════════════════════════════
-   CONFIGURACIÓN — REEMPLAZAR ANTES DE DEPLOY
+   CONFIG
 ════════════════════════════════════════ */
 const CONFIG = {
-  SHEET_ID:   '1wODkzWQ3FOmOJcyXU9p3G_H3NwzCdqzvG1zAOW58Kj8',
-  SHEET_NAME: 'Kapturit-Portal',          // nombre del tab en el sheet
-  SMS_NUMBER: 'KAPTURIT_PHONE',  // número SMS de Kapturit (solo dígitos, sin +1)
-  // Foto de portada placeholder (mientras no hay img real de Drive)
-  PLACEHOLDER_IMG: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&q=80&auto=format&fit=crop',
-  // Fotos de stack placeholder para demo
-  STACK_PLACEHOLDERS: [
-    'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=600&q=75&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=600&q=75&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1544126592-807ade215a0b?w=600&q=75&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1491013516836-7db643ee125a?w=600&q=75&auto=format&fit=crop',
+  PROXY: 'https://kapturit-sheets-proxy.joseisaacolombo.workers.dev',
+  PLACEHOLDER: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&q=80&auto=format&fit=crop',
+  DEMO_PHOTOS: [
+    'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800&q=80',
+    'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&q=80',
+    'https://images.unsplash.com/photo-1544126592-807ade215a0b?w=800&q=80',
+    'https://images.unsplash.com/photo-1491013516836-7db643ee125a?w=800&q=80',
   ],
 };
 
-/* ════════════════════════════════════════
-   ESTADO GLOBAL
-════════════════════════════════════════ */
-let CLIENT = null;   // datos del cliente desde Sheets
-let IS_PAID = false;
-let STACK_IDX = 0;
-let STACK_CARDS = [];
-let DRAG_START = null;
+let CLIENT   = null;
+let IS_PAID  = false;
+let VIDEO_ID = null;
 
 /* ════════════════════════════════════════
-   BOOT — lee código del URL y carga datos
+   BOOT
 ════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const code   = (params.get('id') || '').trim().toUpperCase();
+  const demo   = !code || window.location.protocol === 'file:';
+  const resolved = code || 'DEMO';
 
-  // Demo mode activates when:
-  //  - No ?id= in URL
-  //  - Sheet not configured yet
-  //  - Opening from file:// (browser blocks API calls via CORS)
-  const isFileProtocol = window.location.protocol === 'file:';
-  const notConfigured  = CONFIG.SHEET_ID === 'YOUR_GOOGLE_SHEET_ID';
-  const isDemoMode     = !code || notConfigured || isFileProtocol;
-  const resolvedCode   = code || 'DEMO';
+  document.getElementById('tb-code').textContent = resolved;
 
-  document.getElementById('tb-code').textContent = resolvedCode;
-
-  if (isDemoMode) {
-    // Codes ending in P = paid state, anything else = unpaid
-    CLIENT  = getDemoData(resolvedCode);
-    IS_PAID = resolvedCode.endsWith('P');
-    renderPortal();
+  if (demo) {
+    CLIENT  = getDemoData(resolved);
+    IS_PAID = resolved.endsWith('P');
+    await renderPortal();
     return;
   }
 
   try {
-    const data = await fetchClientData(resolvedCode);
+    const data = await fetchClient(resolved);
     if (!data) { showError(); return; }
     CLIENT  = data;
-    IS_PAID = ['si','sí','yes','true','1']
-                .includes((CLIENT.pagado || '').toLowerCase());
-    renderPortal();
+    IS_PAID = ['si','sí','yes','true','1'].includes((CLIENT.paid || '').toLowerCase());
+    await renderPortal();
   } catch(e) {
-    console.error('Portal fetch error:', e);
+    console.error(e);
     showError();
   }
 });
 
 /* ════════════════════════════════════════
-   GOOGLE SHEETS FETCH
+   FETCH
 ════════════════════════════════════════ */
-async function fetchClientData(code) {
-  const url = `https://kapturit-sheets-proxy.joseisaacolombo.workers.dev/?code=${encodeURIComponent(code)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Sheets API error: ' + res.status);
+async function fetchClient(code) {
+  const res  = await fetch(`${CONFIG.PROXY}/?code=${encodeURIComponent(code)}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
-  if (json.error) return null;
-  return json;
+  return json.error ? null : json;
 }
 
-/* ════════════════════════════════════════
-   DATOS DE DEMO (cuando no hay Sheets)
-════════════════════════════════════════ */
+async function fetchFiles(folderId, type = 'image') {
+  const res  = await fetch(`${CONFIG.PROXY}/?action=listFiles&folderId=${folderId}&type=${type}`);
+  const json = await res.json();
+  return json.files || [];
+}
+
 function getDemoData(code) {
-  const paid = code.endsWith('P');
   return {
-    ID:                   code,
-    baby_name:            'Sofía',
-    last_name:            'García',
-    session_date:         '2025-01-15',
-    session_type:         'Hospital Birth',
-    hospital:             'SLB',
-    weight:               '3.5 kg',
-    height:               '52 cm',
-    paid:                 paid ? 'sí' : 'no',
-    stripe_link:          '#',
-    drive_preview_folder: '',
-    drive_hd_folder:      '#',
-    gallery_printlab_link:'#',
-    name_package:         'Digital Visual Legacy',
-    price_package:        '$149',
+    ID: code, baby_name: 'Sofía', last_name: 'García',
+    session_date: '2025-01-15', session_type: 'Hospital Birth',
+    hospital: 'SLB', weight: '3.5 kg', height: '52 cm',
+    paid: code.endsWith('P') ? 'sí' : 'no',
+    stripe_link: '#', drive_hd_folder: '#',
+    gallery_printlab_link: '#',
+    name_package: 'Digital Visual Legacy', price_package: '149',
+    drive_preview_folder_id: '', drive_hd_folder_id: '', video_folder_id: '',
   };
 }
 
@@ -821,408 +509,245 @@ function getDemoData(code) {
    RENDER PORTAL
 ════════════════════════════════════════ */
 async function renderPortal() {
-  // Hero card
-  document.getElementById('baby-name').textContent =
-    `${CLIENT.baby_name} ${CLIENT.last_name}`;
-  document.getElementById('session-meta').textContent =
-    `${CLIENT.session_type} · ${CLIENT.session_date}`;
-  document.getElementById('session-type-badge').textContent = CLIENT.session_type;
-  document.getElementById('stat-peso').textContent    = CLIENT.weight;
-  document.getElementById('stat-talla').textContent   = CLIENT.height;
-  document.getElementById('stat-hospital').textContent = CLIENT.hospital.split(' ')[0];
-  document.getElementById('stat-fecha').textContent   = CLIENT.session_date;
+  document.title = `Kapturit · ${CLIENT.baby_name}`;
 
-  // Cover image
-  const coverImg = document.getElementById('cover-img');
-  coverImg.src = CLIENT.drive_preview_folder || CONFIG.PLACEHOLDER_IMG;
-  coverImg.onerror = () => { coverImg.src = CONFIG.PLACEHOLDER_IMG; };
+  // Stats
+  document.getElementById('baby-name').textContent     = CLIENT.baby_name || '—';
+  document.getElementById('stat-peso').textContent     = CLIENT.weight    || '—';
+  document.getElementById('stat-talla').textContent    = CLIENT.height    || '—';
+  document.getElementById('stat-hospital').textContent = CLIENT.hospital  || '—';
+  document.getElementById('stat-fecha').textContent    = CLIENT.session_date || '—';
 
-  // State badge
-  const badge = document.getElementById('state-badge');
-  if (IS_PAID) {
-    badge.textContent = '✓ Collection Purchased';
-    badge.className   = 'state-badge paid';
-  } else {
-    badge.textContent = 'Preview';
-    badge.className   = 'state-badge unpaid';
+  // Fetch in parallel
+  const [photos, videoFiles] = await Promise.all([
+    CLIENT.drive_preview_folder_id
+      ? fetchFiles(CLIENT.drive_preview_folder_id, 'image').catch(() => [])
+      : Promise.resolve([]),
+    CLIENT.video_folder_id
+      ? fetchFiles(CLIENT.video_folder_id, 'video').catch(() => [])
+      : Promise.resolve([]),
+  ]);
+
+  // Pick video
+  const previewVid = videoFiles.find(f => /W\./i.test(f.name));
+  const hdVid      = videoFiles.find(f => !/W\./i.test(f.name));
+  const videoFile  = IS_PAID ? (hdVid || previewVid) : (previewVid || hdVid);
+  VIDEO_ID = videoFile ? videoFile.id : null;
+
+  // Render sections
+  renderHeroVideo(photos, videoFile);
+  renderCTA();
+  buildScrollStack(photos);
+  renderFilmTab(videoFile);
+  initNav();
+
+  // Prints
+  const pb = document.getElementById('prints-btn');
+  if (CLIENT.gallery_printlab_link && CLIENT.gallery_printlab_link !== '#') {
+    pb.href = CLIENT.gallery_printlab_link;
   }
 
-  // Fetch photos from Drive via Worker
-  let driveFiles = [];
-  const folderId = CLIENT.drive_preview_folder_id || CLIENT.drive_preview_folder;
-  if (folderId) {
-    try {
-      const filesRes = await fetch(
-        `https://kapturit-sheets-proxy.joseisaacolombo.workers.dev/?action=listFiles&folderId=${folderId}`
-      );
-      const filesData = await filesRes.json();
-      driveFiles = filesData.files || [];
-    } catch (e) {
-      console.warn('Could not load Drive files:', e);
-    }
-  }
-
-  // Photo stack
-  buildPhotoStack(driveFiles);
-
-  // Gallery grid
-  buildGalleryGrid(driveFiles);
-
-  // Fetch & render video
-  await renderVideo();
-
-  // Estado A o B
-  if (IS_PAID) {
-    renderStatePaid();
-  } else {
-    renderStateUnpaid();
-  }
-
-  // Show app
+  // Show
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').style.display = 'block';
 }
 
 /* ════════════════════════════════════════
-   PHOTO STACK (Skiper-style swipe)
+   HERO VIDEO
 ════════════════════════════════════════ */
-function buildPhotoStack(driveFiles) {
-  const wrap  = document.getElementById('stack-wrap');
-  const dots  = document.getElementById('stack-dots');
-  const imgs  = driveFiles.length
-    ? driveFiles.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
-    : CONFIG.STACK_PLACEHOLDERS;
-  STACK_CARDS = [];
-  wrap.innerHTML = '';
-  dots.innerHTML = '';
+function renderHeroVideo(photos, videoFile) {
+  const cover   = document.getElementById('video-cover');
+  const pill    = document.getElementById('vid-pill');
+  const pillTxt = document.getElementById('vid-pill-text');
+  const playBtn = document.getElementById('play-btn');
 
-  imgs.forEach((src, i) => {
+  // Cover image = first photo or placeholder
+  const coverSrc = photos.length
+    ? `https://lh3.googleusercontent.com/d/${photos[0].id}`
+    : CONFIG.PLACEHOLDER;
+  cover.src = coverSrc;
+  cover.onerror = () => { cover.src = CONFIG.PLACEHOLDER; };
+
+  if (!videoFile) {
+    document.getElementById('play-overlay').style.display = 'none';
+    return;
+  }
+
+  pill.style.display    = 'inline-flex';
+  pillTxt.textContent   = (IS_PAID && hdVidName(videoFile))
+    ? 'Full HD · Sin marca de agua' : 'Vista previa · marca de agua';
+
+  playBtn.addEventListener('click', () => {
+    const thumb = document.getElementById('video-thumb');
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://drive.google.com/file/d/${videoFile.id}/preview`;
+    iframe.allowFullscreen = true;
+    iframe.allow = 'autoplay';
+    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
+    thumb.innerHTML = '';
+    thumb.appendChild(iframe);
+  });
+}
+
+function hdVidName(f) { return f && !/W\./i.test(f.name); }
+
+/* ════════════════════════════════════════
+   CTA BUTTONS
+════════════════════════════════════════ */
+function renderCTA() {
+  const wrap = document.getElementById('cta-wrap');
+  wrap.innerHTML = '';
+
+  if (IS_PAID) {
+    if (CLIENT.drive_hd_folder && CLIENT.drive_hd_folder !== '#') {
+      wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), 'Descargar Galería Completa'));
+    }
+    if (VIDEO_ID) {
+      wrap.appendChild(makeLink('btn-s',
+        `https://drive.google.com/uc?id=${VIDEO_ID}&export=download`,
+        iconFilm(), 'Descargar Película'));
+    }
+  } else {
+    const card = document.createElement('div');
+    card.className = 'unpaid-c';
+    card.innerHTML = `
+      <div class="unpaid-pkg">${CLIENT.name_package || 'Tu colección'}</div>
+      <div class="unpaid-price">$${CLIENT.price_package || '—'}</div>
+      <p class="unpaid-desc">Descarga todas las fotos y la película en alta definición, sin marcas de agua.</p>
+    `;
+    wrap.appendChild(card);
+    if (CLIENT.stripe_link && CLIENT.stripe_link !== '#') {
+      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), 'Comprar Colección'));
+    }
+  }
+}
+
+function makeLink(cls, href, iconSvg, label) {
+  const a = document.createElement('a');
+  a.className = cls; a.href = href; a.target = '_blank'; a.rel = 'noopener';
+  a.innerHTML = iconSvg + label;
+  return a;
+}
+function iconDownload() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>`; }
+function iconFilm() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`; }
+function iconCard() { return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`; }
+
+/* ════════════════════════════════════════
+   SCROLL CARD STACK
+════════════════════════════════════════ */
+function buildScrollStack(photos) {
+  const container = document.getElementById('stack-container');
+  container.innerHTML = '';
+
+  const srcs = photos.length
+    ? photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
+    : CONFIG.DEMO_PHOTOS;
+
+  srcs.forEach((src, i) => {
+    // Spacer provides scroll distance for this card
+    const spacer = document.createElement('div');
+    spacer.className = 'stack-spacer';
+
+    // Sticky slide
+    const slide = document.createElement('div');
+    slide.className = 'stack-slide';
+
+    // Card
     const card = document.createElement('div');
     card.className = 'stack-card';
-    card.style.zIndex = imgs.length - i;
-    setCardTransform(card, i);
+    card.dataset.index = i;
+    card.style.zIndex  = i + 1;
 
     const img = document.createElement('img');
     img.src = src;
     img.alt = `Momento ${i + 1}`;
-    img.loading = i === 0 ? 'eager' : 'lazy';
-    card.appendChild(img);
-
-    // Watermark si no pagó
-    if (!IS_PAID) {
-      const wm = document.createElement('div');
-      wm.className = 'wm-overlay';
-      wm.innerHTML = '<span class="wm-text">KAPTURIT · PREVIEW</span>';
-      card.appendChild(wm);
-    }
+    img.loading = i < 2 ? 'eager' : 'lazy';
+    img.onerror = () => { img.style.display = 'none'; };
 
     const overlay = document.createElement('div');
     overlay.className = 'stack-card-overlay';
-    overlay.innerHTML = `<span class="stack-caption">${CLIENT.nombre_bebe} · ${CLIENT.tipo_sesion}</span>`;
+    overlay.innerHTML = `<span class="stack-card-num">${String(i+1).padStart(2,'0')} / ${String(srcs.length).padStart(2,'0')}</span>`;
+
+    card.appendChild(img);
     card.appendChild(overlay);
-
-    // Touch / mouse drag
-    setupCardDrag(card, i);
-    wrap.appendChild(card);
-    STACK_CARDS.push(card);
-
-    // Dot
-    const dot = document.createElement('div');
-    dot.className = 'stack-dot' + (i === 0 ? ' active' : '');
-    dots.appendChild(dot);
-  });
-}
-
-function setCardTransform(card, offset) {
-  const scale   = 1 - offset * 0.04;
-  const transY  = offset * 10;
-  const rot     = offset % 2 === 0 ? offset * 1.5 : -offset * 1.5;
-  card.style.transform = `translateY(${transY}px) scale(${scale}) rotate(${rot}deg)`;
-  card.style.opacity   = offset < 3 ? 1 - offset * 0.15 : 0;
-}
-
-function setupCardDrag(card, idx) {
-  let startX = 0, startY = 0, moving = false;
-
-  const onStart = (x, y) => { startX = x; startY = y; moving = true; };
-  const onMove  = (x) => {
-    if (!moving || idx !== STACK_IDX) return;
-    const dx = x - startX;
-    card.style.transition = 'none';
-    card.style.transform  = `translateX(${dx}px) rotate(${dx * 0.05}deg)`;
-  };
-  const onEnd = (x) => {
-    if (!moving) return;
-    moving = false;
-    const dx = x - startX;
-    if (Math.abs(dx) > 60) {
-      dismissTopCard();
-    } else {
-      card.style.transition = 'transform .4s cubic-bezier(.16,1,.3,1)';
-      setCardTransform(card, 0);
-    }
-  };
-
-  // Touch
-  card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
-  card.addEventListener('touchmove',  e => onMove(e.touches[0].clientX),  {passive:true});
-  card.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
-  // Mouse
-  card.addEventListener('mousedown',  e => onStart(e.clientX, e.clientY));
-  window.addEventListener('mousemove', e => onMove(e.clientX));
-  window.addEventListener('mouseup',   e => onEnd(e.clientX));
-}
-
-function dismissTopCard() {
-  const total = STACK_CARDS.length;
-  if (STACK_IDX >= total) return;
-
-  const card = STACK_CARDS[STACK_IDX];
-  card.style.transition = 'transform .4s ease, opacity .3s ease';
-  card.style.transform  = `translateX(400px) rotate(20deg)`;
-  card.style.opacity    = '0';
-
-  STACK_IDX = (STACK_IDX + 1) % total;
-
-  // Reorder remaining
-  STACK_CARDS.forEach((c, i) => {
-    const offset = (i - STACK_IDX + total) % total;
-    if (i !== (STACK_IDX - 1 + total) % total) {
-      c.style.transition = 'transform .4s cubic-bezier(.16,1,.3,1), opacity .3s';
-      setCardTransform(c, offset);
-      c.style.zIndex = total - offset;
-    }
+    slide.appendChild(card);
+    spacer.appendChild(slide);
+    container.appendChild(spacer);
   });
 
-  // Reset dismissed card to back after animation
-  setTimeout(() => {
-    const offset = (STACK_IDX - 1 + total) % total + (total - 1);
-    setCardTransform(card, total - 1);
-    card.style.opacity = '0';
-    card.style.zIndex  = '0';
-  }, 420);
+  // Tail spacer so last card can scroll out
+  const tail = document.createElement('div');
+  tail.style.height = '50vh';
+  container.appendChild(tail);
 
-  // Update dots
-  document.querySelectorAll('.stack-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === STACK_IDX);
-  });
+  initScrollAnim(container);
 }
 
-/* ════════════════════════════════════════
-   GALLERY GRID
-════════════════════════════════════════ */
-function buildGalleryGrid(driveFiles) {
-  const grid = document.getElementById('gallery-grid');
-  grid.innerHTML = '';
-  const imgs = driveFiles.length
-    ? driveFiles.map(f => `https://lh3.googleusercontent.com/d/${f.id}`)
-    : CONFIG.STACK_PLACEHOLDERS;
+function initScrollAnim(container) {
+  function tick() {
+    const cards   = container.querySelectorAll('.stack-card');
+    const scrollY = window.scrollY;
+    const viewH   = window.innerHeight;
+    const slideH  = viewH * 0.8; // matches .stack-spacer height: 80vh
 
-  imgs.forEach((src, i) => {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;border-radius:.85rem;overflow:hidden;aspect-ratio:1;background:var(--navy-2)';
-
-    const img = document.createElement('img');
-    img.src = src;
-    img.alt = `Momento ${i+1}`;
-    img.loading = 'lazy';
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-
-    if (!IS_PAID) {
-      const wm = document.createElement('div');
-      wm.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none';
-      wm.innerHTML = '<span style="font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);transform:rotate(-30deg);white-space:nowrap;font-family:DM Sans,sans-serif">KAPTURIT</span>';
-      wrap.appendChild(img);
-      wrap.appendChild(wm);
-    } else {
-      wrap.appendChild(img);
-    }
-
-    grid.appendChild(wrap);
-  });
-
-  if (!IS_PAID) {
-    document.getElementById('gallery-wm-note').style.display = 'block';
+    cards.forEach((card) => {
+      const spacer   = card.closest('.stack-spacer');
+      if (!spacer) return;
+      const top      = spacer.getBoundingClientRect().top + scrollY;
+      const progress = Math.max(0, Math.min(1, (scrollY - top) / slideH));
+      const scale    = 1 - progress * 0.055;
+      const tY       = -(progress * 48);
+      card.style.transform = `scale(${scale}) translateY(${tY}px)`;
+    });
   }
+
+  window.addEventListener('scroll', tick, { passive: true });
+  tick();
 }
 
 /* ════════════════════════════════════════
-   ESTADO A — Ya compró
+   FILM TAB
 ════════════════════════════════════════ */
-async function renderVideo() {
-  const videoFolderId = CLIENT.video_folder_id;
-  if (!videoFolderId) return;
+function renderFilmTab(videoFile) {
+  const wrap  = document.getElementById('film-wrap');
+  const badge = document.getElementById('film-pill-text');
 
-  try {
-    const res = await fetch(
-      `https://kapturit-sheets-proxy.joseisaacolombo.workers.dev/?action=listFiles&folderId=${videoFolderId}&type=video`
-    );
-    const data = await res.json();
-    const files = data.files || [];
-    if (!files.length) return;
-
-    // W = watermark preview, without W = HD
-    const previewFile = files.find(f => /W\./i.test(f.name));
-    const hdFile     = files.find(f => !/W\./i.test(f.name));
-
-    const fileToShow = IS_PAID ? (hdFile || previewFile) : (previewFile || hdFile);
-    if (!fileToShow) return;
-
-    const section = document.getElementById('video-section');
-    const player  = document.getElementById('video-player');
-    const badge   = document.getElementById('video-badge-text');
-
-    player.src = `https://drive.google.com/file/d/${fileToShow.id}/preview`;
-
-    if (IS_PAID && hdFile) {
-      badge.textContent = 'Full HD · No watermark';
-    } else {
-      badge.textContent = 'Preview · watermark';
-    }
-
-    section.style.display = 'block';
-  } catch(e) {
-    console.warn('Could not load video:', e);
+  if (!videoFile) {
+    wrap.outerHTML = `<div class="film-none"><p>Película no disponible aún.</p></div>`;
+    return;
   }
+
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://drive.google.com/file/d/${videoFile.id}/preview`;
+  iframe.allowFullscreen = true; iframe.allow = 'autoplay';
+  wrap.appendChild(iframe);
+
+  badge.textContent = (IS_PAID && hdVidName(videoFile))
+    ? 'Full HD · Sin marca de agua' : 'Vista previa · marca de agua';
 }
 
-function renderStatePaid() {
-  document.getElementById('state-paid').style.display = 'block';
-
-  const grid = document.getElementById('download-grid');
-  const btns = [
-    {
-      cls: 'dl-photos',
-      href: CLIENT.drive_hd_folder || '#',
-      icon: `<svg viewBox="0 0 24 24" stroke="var(--teal)" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
-      title: 'Download Photos',
-      sub: 'High resolution · No watermark',
-    },
-    {
-      cls: 'dl-video',
-      href: CLIENT.drive_hd_folder || '#',
-      icon: `<svg viewBox="0 0 24 24" stroke="var(--crimson)" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
-      title: 'Download Film',
-      sub: 'Full HD · Cinematic edit',
-    },
-    {
-      cls: 'dl-prints',
-      href: CLIENT.gallery_printlab_link || '#',
-      icon: `<svg viewBox="0 0 24 24" stroke="var(--ink)" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
-      title: 'Order Prints',
-      sub: 'Albums, canvas & more',
-    },
-  ];
-
-  btns.forEach(b => {
-    const el = document.createElement('a');
-    el.className = `dl-btn ${b.cls}`;
-    el.href = b.href;
-    el.target = b.href !== '#' ? '_blank' : '_self';
-    el.rel = 'noopener';
-    el.innerHTML = `
-      <div class="dl-btn-icon">${b.icon}</div>
-      <div class="dl-btn-copy">
-        <div class="dl-btn-title">${b.title}</div>
-        <div class="dl-btn-sub">${b.sub}</div>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="margin-left:auto;opacity:.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    `;
-    grid.appendChild(el);
+/* ════════════════════════════════════════
+   BOTTOM NAV
+════════════════════════════════════════ */
+function initNav() {
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   });
 }
 
 /* ════════════════════════════════════════
-   ESTADO B — No compró · paquetes
-════════════════════════════════════════ */
-const PACKAGES = [
-  {
-    tier:'Entry', featured:false,
-    name:'Digital Visual Legacy',
-    price:'$149',
-    features:['40+ edited photos','Private digital gallery','High-resolution download','SMS delivery'],
-  },
-  {
-    tier:'Popular', featured:true,
-    name:'Cinematic Heirloom',
-    price:'$299',
-    features:['Everything in previous package','Full HD cinematic film','Director\'s Cut highlight reel','Original narrative audio','Premium private portal'],
-  },
-  {
-    tier:'Premium', featured:false,
-    name:'The Masterpiece',
-    price:'$449',
-    features:['Full cinematography suite','Film + HD photos','Hand-bound linen heirloom album','SMS alerts + premium portal'],
-  },
-];
-
-function renderStateUnpaid() {
-  document.getElementById('state-unpaid').style.display = 'block';
-  document.getElementById('nav-shop').style.display = 'flex';
-
-  // Scroll horizontal en home
-  const scroll = document.getElementById('pkg-scroll');
-  buildPackageCards(scroll, 'scroll');
-
-  // Lista vertical en tab Comprar
-  const list = document.getElementById('shop-pkg-list');
-  buildPackageCards(list, 'list');
-}
-
-function buildPackageCards(container, mode) {
-  PACKAGES.forEach((pkg, i) => {
-    const card = document.createElement('div');
-
-    if (mode === 'scroll') {
-      card.className = `pkg-c${pkg.featured ? ' featured' : ''}`;
-    } else {
-      card.className = `pkg-c${pkg.featured ? ' featured' : ''}`;
-      card.style.width = '100%';
-    }
-
-    const stripeLink = CLIENT.stripe_link || '#';
-    card.innerHTML = `
-      ${pkg.featured ? '<div class="pkg-rec">Recomendado</div>' : ''}
-      <div class="pkg-tier">${pkg.tier}</div>
-      <div class="pkg-name">${pkg.name}</div>
-      <div class="pkg-price">${pkg.price} <span>USD</span></div>
-      <ul class="pkg-features">
-        ${pkg.features.map(f => `<li>${f}</li>`).join('')}
-      </ul>
-      <a href="${stripeLink}" target="_blank" rel="noopener"
-         class="pkg-btn ${pkg.featured ? 'pkg-btn-solid' : 'pkg-btn-outline'}"
-         onclick="showToast('Redirigiendo a pago seguro…')">
-        ${pkg.featured ? 'Purchase Now' : 'Select'}
-      </a>
-    `;
-    container.appendChild(card);
-  });
-}
-
-/* ════════════════════════════════════════
-   NAVEGACIÓN
-════════════════════════════════════════ */
-function navigate(section, btn) {
-  document.querySelectorAll('.nav-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById(`sec-${section}`).classList.add('active');
-  btn.classList.add('active');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-/* ════════════════════════════════════════
-   UTILIDADES
+   ERROR
 ════════════════════════════════════════ */
 function showError() {
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('error-screen').classList.add('show');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
 }
 </script>
 </body>
