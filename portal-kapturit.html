@@ -167,20 +167,27 @@ img{display:block;max-width:100%}
 .unpaid-price{font-family:'Noto Serif',serif;font-size:2.75rem;color:var(--primary);margin:.4rem 0}
 .unpaid-desc{font-size:.82rem;color:var(--muted);line-height:1.65;max-width:260px;margin:0 auto}
 
-/* ── Baby stats ── */
-.baby-stats{
-  padding:2.5rem 0;
-  border-top:1px solid rgba(119,124,120,.12);
-  border-bottom:1px solid rgba(119,124,120,.12);
-  text-align:center;
+/* ── Birth card (stats) ── */
+.birth-card{
+  background:var(--surf-lo);border-radius:1.5rem;
+  padding:1.25rem 1rem;
+  border:1px solid rgba(119,124,120,.08);
+  margin-bottom:.5rem;
 }
-.baby-name{
-  font-family:'Noto Serif',serif;font-size:3.25rem;
-  color:var(--on-surf);letter-spacing:-.02em;line-height:1.1;margin-bottom:2rem;
+.birth-card-row{
+  display:flex;align-items:center;justify-content:space-around;
 }
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem 1rem;max-width:300px;margin:0 auto}
-.stat-lbl{font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--outline);display:block;margin-bottom:.3rem}
-.stat-val{font-family:'Noto Serif',serif;font-size:1.55rem;color:var(--primary)}
+.bc-stat{flex:1;text-align:center;display:flex;flex-direction:column;gap:.3rem}
+.bc-val{
+  font-family:'Noto Serif',serif;font-size:1rem;
+  color:var(--primary);font-weight:700;line-height:1.2;
+  word-break:break-word;
+}
+.bc-lbl{
+  font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--outline);font-weight:700;
+}
+.bc-sep{width:1px;height:2.25rem;background:rgba(119,124,120,.15);flex-shrink:0}
 
 /* ── Baby moments teaser grid ── */
 #stack-container{
@@ -194,24 +201,22 @@ img{display:block;max-width:100%}
 }
 #stack-container .photo-cell{aspect-ratio:3/4}
 
-/* ── Gallery masonry ── */
+/* ── Gallery grid (square) ── */
 #gallery-grid{
-  columns:2;column-gap:.5rem;
-  padding:.5rem 1rem 1rem;
-  display:block;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  padding:0;
 }
-@media(min-width:700px){#gallery-grid{columns:3}}
 #gallery-grid .photo-cell{
-  break-inside:avoid;
-  margin-bottom:.5rem;
-  aspect-ratio:unset;
+  aspect-ratio:1;
+  border-radius:0;
 }
-#gallery-grid .photo-cell img{height:auto}
 
 /* ── Gallery header ── */
 .gallery-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:1.25rem 1.25rem .25rem;
+  padding:1.25rem 1.25rem .75rem;
 }
 .gallery-count{font-size:.75rem;color:var(--muted);font-weight:500}
 
@@ -501,18 +506,31 @@ img{display:block;max-width:100%}
     </div>
 
     <!-- CTA: packages (unpaid) or downloads (paid) -->
-    <div class="inner">
-      <div id="cta-wrap"></div>
-    </div>
+    <div id="cta-wrap"></div>
 
     <!-- Baby stats -->
     <div class="inner">
-      <div class="baby-stats gap">
-        <div class="stats-grid">
-          <div><span class="stat-lbl" data-i18n="weight">Weight</span><span class="stat-val" id="stat-peso">—</span></div>
-          <div><span class="stat-lbl" data-i18n="height">Height</span><span class="stat-val" id="stat-talla">—</span></div>
-          <div><span class="stat-lbl" data-i18n="hospital">Hospital</span><span class="stat-val" id="stat-hospital">—</span></div>
-          <div><span class="stat-lbl" data-i18n="date">Date</span><span class="stat-val" id="stat-fecha">—</span></div>
+      <div class="birth-card">
+        <div class="birth-card-row">
+          <div class="bc-stat">
+            <span class="bc-val" id="stat-peso">—</span>
+            <span class="bc-lbl" data-i18n="weight">Weight</span>
+          </div>
+          <div class="bc-sep"></div>
+          <div class="bc-stat">
+            <span class="bc-val" id="stat-talla">—</span>
+            <span class="bc-lbl" data-i18n="height">Height</span>
+          </div>
+          <div class="bc-sep"></div>
+          <div class="bc-stat">
+            <span class="bc-val" id="stat-hospital">—</span>
+            <span class="bc-lbl" data-i18n="hospital">Hospital</span>
+          </div>
+          <div class="bc-sep"></div>
+          <div class="bc-stat">
+            <span class="bc-val" id="stat-fecha">—</span>
+            <span class="bc-lbl" data-i18n="date">Date</span>
+          </div>
         </div>
       </div>
     </div>
@@ -799,6 +817,28 @@ let _heroPhotos    = [];
 let _heroVideoFile = null;
 let _filmVideoFile = undefined;
 
+/* ── Local package catalog (fallback if Worker returns old version) ── */
+const PACKAGES_LOCAL = [
+  {
+    id: 'photos', name: 'Digital Visual Legacy', badge: null,
+    description: 'Still cinematography focused — a comprehensive collection of professionally mastered digital highlights.',
+    features: ['40+ Mastered Highlights', 'Digital Art Gallery Access', 'Private Viewing & Download Rights', 'Secure SMS Delivery'],
+    prices: { hospital: 149, portal: 199, regular: 249 },
+  },
+  {
+    id: 'video', name: 'Cinematic Heirloom', badge: 'Most Popular',
+    description: 'Motion tells the story still filmmaking cannot — a professionally edited film capturing the rhythm and sound of your baby\'s arrival.',
+    features: ['Full HD Cinematic Heirloom Film', 'Director\'s Cut Highlight Reel', 'Instant SMS Arrival Alert', 'Raw Narrative Audio Capture', 'Private Secure Portal'],
+    prices: { hospital: 249, portal: 329, regular: 399 },
+  },
+  {
+    id: 'bundle', name: 'The Masterpiece Collection', badge: null,
+    description: 'The ultimate preservation — full scale cinematography, film, and a physical heirloom book to be touched for generations.',
+    features: ['Full Cinematography Suite', 'Hand-Bound Linen Heirloom Album', 'SMS Alerts & Premium Private Portal', 'Priority Filmmaker Assignment'],
+    prices: { hospital: 449, portal: 549, regular: 649 },
+  },
+];
+
 /* ── GA4 Analytics ── */
 function track(eventName, params = {}) {
   if (typeof gtag === 'undefined') return;
@@ -980,6 +1020,7 @@ function renderCTA() {
   wrap.innerHTML = '';
 
   if (IS_PAID) {
+    wrap.style.cssText = 'padding:0 1.25rem;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem';
     if (CLIENT.drive_hd_folder && CLIENT.drive_hd_folder !== '#') {
       wrap.appendChild(makeLink('btn-p', CLIENT.drive_hd_folder, iconDownload(), T('downloadGallery'), 'download_gallery'));
     }
@@ -988,31 +1029,30 @@ function renderCTA() {
         `https://drive.google.com/uc?id=${VIDEO_ID}&export=download`,
         iconFilm(), T('downloadFilm'), 'download_film'));
     }
-  } else if (CLIENT.packages && CLIENT.packages.length) {
-    renderPackages(wrap);
   } else {
-    // Fallback: single price card (demo / legacy)
-    const card = document.createElement('div');
-    card.className = 'unpaid-c';
-    card.innerHTML = `
-      <div class="unpaid-pkg">${CLIENT.name_package || T('yourCollection')}</div>
-      <div class="unpaid-price">$${CLIENT.price_package || '—'}</div>
-      <p class="unpaid-desc">${T('downloadDesc')}</p>
-    `;
-    wrap.appendChild(card);
-    if (CLIENT.stripe_link && CLIENT.stripe_link !== '#') {
-      wrap.appendChild(makeLink('btn-p', CLIENT.stripe_link, iconCard(), T('purchase'), 'purchase_click'));
-    }
+    // Build packages from Worker response OR local catalog fallback
+    const tier = CLIENT.price_tier || 'regular';
+    const packages = (CLIENT.packages && CLIENT.packages.length)
+      ? CLIENT.packages
+      : PACKAGES_LOCAL.map(pkg => ({
+          id: pkg.id, name: pkg.name, badge: pkg.badge,
+          description: pkg.description, features: pkg.features,
+          price: pkg.prices[tier], price_regular: pkg.prices.regular,
+          stripe_link: '#', tier,
+        }));
+    CLIENT._packages_resolved = packages; // cache for re-renders
+    renderPackages(wrap, packages);
   }
 }
 
-function renderPackages(wrap) {
+function renderPackages(wrap, packages) {
+  packages = packages || CLIENT._packages_resolved || [];
   const section = document.createElement('div');
   section.className = 'pkg-section';
   const grid = document.createElement('div');
   grid.className = 'pkg-grid';
 
-  CLIENT.packages.forEach(pkg => {
+  packages.forEach(pkg => {
     const isFeatured = !!pkg.badge;
     const card = document.createElement('div');
     card.className = 'pkg-card' + (isFeatured ? ' featured' : '');
