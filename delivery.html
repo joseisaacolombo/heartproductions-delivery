@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Heart Productions · Your Delivery</title>
+<meta name="robots" content="noindex,nofollow,noarchive"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #faf9f7;
+  --primary: #8b2635;
+  --pri-c:   #f5d0d5;
+  --on-pri:  #fff7f8;
+  --surf:    #faf9f7;
+  --surf-lo: #f3f1ef;
+  --surf-hi: #e8e4e1;
+  --on-surf: #2a2220;
+  --muted:   #6b5f5c;
+  --outline: #a89490;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+  --hdr: 60px;
+  --nav: 68px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{
+  font-family:'Manrope',sans-serif;
+  background:var(--bg);color:var(--on-surf);
+  min-height:100dvh;
+  padding-top:calc(var(--hdr) + var(--safe-top));
+  padding-bottom:calc(var(--nav) + var(--safe-bot));
+  overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+
+/* ── Loading ── */
+#loading{
+  position:fixed;inset:0;background:var(--on-surf);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1.5rem;z-index:9000;transition:opacity .5s ease;
+}
+#loading.hidden{opacity:0;pointer-events:none}
+.loader-brand{font-family:'Noto Serif',serif;font-style:italic;font-size:1.1rem;color:var(--pri-c);letter-spacing:.05em}
+.loader-bar{width:90px;height:1px;background:rgba(255,255,255,.12);overflow:hidden;border-radius:9999px}
+.loader-fill{height:100%;background:var(--primary);width:0;animation:load 1.8s ease forwards}
+@keyframes load{to{width:100%}}
+
+/* ── Error ── */
+#error-screen{
+  display:none;position:fixed;inset:0;background:var(--on-surf);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;padding:2rem;text-align:center;z-index:8000;
+}
+#error-screen.show{display:flex}
+.err-label{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.err-title{font-family:'Noto Serif',serif;font-size:2rem;color:#fff}
+.err-body{font-size:.82rem;color:rgba(255,255,255,.4);max-width:280px;line-height:1.7}
+
+/* ── Header ── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  height:calc(var(--hdr) + var(--safe-top));
+  padding-top:var(--safe-top);
+  background:rgba(250,249,247,.88);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--surf-hi);
+  display:flex;align-items:center;justify-content:space-between;
+  padding-left:1.25rem;padding-right:1.25rem;
+}
+.tb-brand{font-family:'Noto Serif',serif;font-style:italic;font-size:.95rem;color:var(--primary);letter-spacing:.02em}
+#tb-code{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);background:var(--surf-lo);padding:.2rem .55rem;border-radius:9999px}
+
+/* ── App ── */
+#app{display:none}
+
+/* ── Tabs ── */
+.tab{display:none}
+.tab.active{display:block}
+
+/* ── Hero ── */
+.hero-wrap{position:relative;margin:1.25rem 1.25rem 0;border-radius:1.5rem;overflow:hidden;aspect-ratio:4/3;background:var(--surf-hi)}
+.hero-wrap img{width:100%;height:100%;object-fit:cover}
+.hero-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 55%)}
+.hero-info{position:absolute;bottom:1.1rem;left:1.2rem;right:1.2rem}
+.hero-baby{font-family:'Noto Serif',serif;font-style:italic;font-size:1.6rem;color:#fff;line-height:1.2}
+.hero-sub{font-size:.72rem;color:rgba(255,255,255,.7);margin-top:.25rem;letter-spacing:.04em}
+
+/* ── CTA buttons ── */
+.cta-wrap{padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.75rem}
+.btn-p,.btn-s{
+  display:flex;align-items:center;justify-content:center;gap:.55rem;
+  padding:.9rem 1.25rem;border-radius:.9rem;font-size:.88rem;font-weight:700;
+  letter-spacing:.02em;cursor:pointer;border:none;width:100%;text-align:center;
+  transition:opacity .15s;
+}
+.btn-p{background:var(--primary);color:#fff}
+.btn-p:hover{opacity:.88}
+.btn-s{background:var(--surf-lo);color:var(--on-surf);border:1.5px solid var(--surf-hi)}
+.btn-s:hover{opacity:.8}
+.btn-icon{width:18px;height:18px;flex-shrink:0}
+
+/* ── Prints card ── */
+.prints-card{
+  margin:0 1.25rem 1.5rem;
+  background:var(--surf-lo);
+  border:1.5px solid var(--surf-hi);
+  border-radius:1.25rem;
+  padding:1.4rem 1.25rem;
+  display:flex;flex-direction:column;gap:.75rem;
+}
+.prints-title{font-family:'Noto Serif',serif;font-size:1.15rem;font-weight:700}
+.prints-desc{font-size:.82rem;color:var(--muted);line-height:1.65}
+
+/* ── Photo grid ── */
+.gallery-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem .5rem}
+.gallery-title{font-family:'Noto Serif',serif;font-size:1.05rem}
+#gallery-count{font-size:.72rem;color:var(--muted)}
+.photo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:3px;
+  padding:0 1.25rem 1.25rem;
+}
+.photo-cell{aspect-ratio:3/4;background:var(--surf-hi);overflow:hidden;border-radius:.35rem;position:relative;cursor:pointer}
+.photo-cell img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.photo-cell:hover img{transform:scale(1.04)}
+.photo-shield{position:absolute;inset:0}
+.photo-shield:not([data-open]){pointer-events:none}
+
+/* ── See all ── */
+.see-all-btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  width:calc(100% - 2.5rem);margin:0 1.25rem 1.25rem;
+  padding:.8rem;border-radius:.9rem;border:1.5px dashed var(--outline);
+  background:transparent;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;
+}
+
+/* ── Film tab ── */
+.film-wrap{padding:1.25rem}
+.film-player{border-radius:1.25rem;overflow:hidden;aspect-ratio:16/9;background:var(--on-surf)}
+.film-player iframe{width:100%;height:100%;border:none}
+.film-title{font-family:'Noto Serif',serif;font-size:1.05rem;padding:.9rem 1.25rem .25rem}
+.film-none{padding:3rem 2rem;text-align:center;color:var(--muted);font-size:.85rem}
+
+/* ── Prints tab ── */
+.prints-tab-wrap{padding:1.25rem}
+.prints-hero{border-radius:1.25rem;overflow:hidden;background:var(--surf-lo);padding:2rem 1.5rem;margin-bottom:1.25rem;text-align:center}
+.prints-hero-icon{font-size:2.5rem;margin-bottom:.75rem}
+.prints-hero-title{font-family:'Noto Serif',serif;font-size:1.3rem;margin-bottom:.5rem}
+.prints-hero-desc{font-size:.82rem;color:var(--muted);line-height:1.65;max-width:280px;margin:0 auto 1.25rem}
+
+/* ── Lightbox ── */
+#lightbox{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);
+  z-index:900;align-items:center;justify-content:center;
+}
+#lightbox.open{display:flex}
+#lb-img{max-height:88dvh;max-width:92vw;object-fit:contain;border-radius:.5rem;user-select:none;-webkit-user-drag:none}
+.lb-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.12);border:none;border-radius:50%;
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+#lb-prev{left:1rem}#lb-next{right:1rem}
+#lb-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:1.2rem}
+.lb-btn svg{stroke:#fff;width:20px;height:20px}
+
+/* ── Bottom nav ── */
+#bottomnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:500;
+  height:calc(var(--nav) + var(--safe-bot));
+  padding-bottom:var(--safe-bot);
+  background:rgba(250,249,247,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--surf-hi);
+  display:flex;align-items:center;justify-content:space-around;
+  padding-left:.5rem;padding-right:.5rem;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  padding:.5rem .75rem;border:none;background:none;cursor:pointer;
+  color:var(--muted);font-size:.6rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:.75rem;transition:color .15s;
+  flex:1;
+}
+.nav-btn.active{color:var(--primary)}
+.nav-btn.hidden{display:none}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Support ── */
+.support-wrap{padding:1.25rem}
+.support-title{font-family:'Noto Serif',serif;font-size:1.15rem;margin-bottom:.75rem}
+.support-email{font-size:.85rem;color:var(--muted);margin-bottom:1.25rem}
+.support-email a{color:var(--primary);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loader-brand">Heart Productions</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- Error -->
+<div id="error-screen">
+  <div class="err-label">Access Error</div>
+  <div class="err-title">Link not found</div>
+  <div class="err-body">This link doesn't match any active delivery. Please check the message you received or contact us at contact@heartproductions.net</div>
+</div>
+
+<!-- Header -->
+<header id="topbar">
+  <span class="tb-brand">Heart Productions</span>
+  <span id="tb-code"></span>
+</header>
+
+<!-- App -->
+<div id="app">
+
+  <!-- ── HOME TAB ── -->
+  <div class="tab active" id="tab-home">
+    <div class="hero-wrap">
+      <img id="hero-img" src="" alt=""/>
+      <div class="hero-gradient"></div>
+      <div class="hero-info">
+        <div class="hero-baby" id="hero-baby"></div>
+        <div class="hero-sub" id="hero-sub"></div>
+      </div>
+    </div>
+
+    <!-- Download buttons -->
+    <div class="cta-wrap" id="cta-wrap"></div>
+
+    <!-- Prints card (only if prints) -->
+    <div class="prints-card" id="prints-card" style="display:none">
+      <div class="prints-title">Your Print Credits</div>
+      <div class="prints-desc">Use your included print credits to order physical prints, albums, canvases, and more — delivered to your door.</div>
+      <a class="btn-s" id="prints-card-btn" href="#" target="_blank" rel="noopener">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Order Prints
+      </a>
+    </div>
+
+    <!-- Photo teaser (only if photos) -->
+    <div id="photo-teaser-section" style="display:none">
+      <div class="gallery-header">
+        <span class="gallery-title">Moments</span>
+        <span id="teaser-count"></span>
+      </div>
+      <div class="photo-grid" id="stack-container"></div>
+    </div>
+  </div>
+
+  <!-- ── GALLERY TAB ── -->
+  <div class="tab" id="tab-gallery">
+    <div class="gallery-header">
+      <span class="gallery-title">Full Gallery</span>
+      <span id="gallery-count"></span>
+    </div>
+    <div class="photo-grid" id="gallery-grid"></div>
+  </div>
+
+  <!-- ── FILM TAB ── -->
+  <div class="tab" id="tab-film">
+    <div class="film-title">Your Film</div>
+    <div class="film-wrap">
+      <div class="film-player" id="film-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ── PRINTS TAB ── -->
+  <div class="tab" id="tab-prints">
+    <div class="prints-tab-wrap">
+      <div class="prints-hero">
+        <div class="prints-hero-icon">🖼</div>
+        <div class="prints-hero-title">Order Your Prints</div>
+        <div class="prints-hero-desc">Turn your favorite moments into lasting physical pieces — albums, canvas prints, framed portraits, and more.</div>
+        <a class="btn-p" id="prints-tab-btn" href="#" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Shop Prints
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SUPPORT TAB ── -->
+  <div class="tab" id="tab-support">
+    <div class="support-wrap">
+      <div class="support-title">Need help?</div>
+      <div class="support-email">Reach us at <a href="mailto:contact@heartproductions.net">contact@heartproductions.net</a></div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Lightbox -->
+<div id="lightbox" role="dialog">
+  <button id="lb-close">✕</button>
+  <button class="lb-btn" id="lb-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+  <img id="lb-img" src="" alt="" draggable="false"/>
+  <button class="lb-btn" id="lb-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+</div>
+
+<!-- Bottom nav -->
+<nav id="bottomnav">
+  <button class="nav-btn active" data-tab="tab-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nav-btn hidden" data-tab="tab-gallery" id="nav-gallery">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    Photos
+  </button>
+  <button class="nav-btn hidden" data-tab="tab-film" id="nav-film">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    Film
+  </button>
+  <button class="nav-btn hidden" data-tab="tab-prints" id="nav-prints">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Prints
+  </button>
+  <button class="nav-btn" data-tab="tab-support">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Support
+  </button>
+</nav>
+
+<script>
+/* ════════════════════════════════════════
+   CONFIG  — update PROXY after deploying the Worker
+════════════════════════════════════════ */
+const CONFIG = {
+  PROXY: 'https://hp-delivery-worker.joseisaacolombo.workers.dev',
+  PLACEHOLDER: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&q=80&auto=format&fit=crop',
+};
+
+let CLIENT        = null;
+let DELIVERY_TYPE = 'photos';
+let _gridSrcs     = [];
+
+/* ── Delivery type helpers ── */
+const hasPhotos = () => DELIVERY_TYPE.includes('photos');
+const hasVideo  = () => DELIVERY_TYPE.includes('video');
+const hasPrints = () => DELIVERY_TYPE.includes('print');
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const code   = (params.get('id') || '').trim().toUpperCase();
+
+  if (!code) { showError(); return; }
+  document.getElementById('tb-code').textContent = code;
+
+  try {
+    const data = await fetchClient(code);
+    if (!data) { showError(); return; }
+    CLIENT        = data;
+    DELIVERY_TYPE = (CLIENT.delivery_type || 'photos').toLowerCase();
+    await renderDelivery();
+  } catch(e) {
+    console.error(e);
+    showError();
+  }
+});
+
+/* ════════════════════════════════════════
+   FETCH
+════════════════════════════════════════ */
+async function fetchClient(code) {
+  const res  = await fetch(`${CONFIG.PROXY}/?code=${encodeURIComponent(code)}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  return json.error ? null : json;
+}
+
+async function fetchFiles(folderId, type = 'image') {
+  const res  = await fetch(`${CONFIG.PROXY}/?action=listFiles&folderId=${folderId}&type=${type}`);
+  const json = await res.json();
+  return json.files || [];
+}
+
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
+async function renderDelivery() {
+  const babyName = CLIENT.baby_name || 'Your Baby';
+  document.title = `Heart Productions · ${babyName}`;
+
+  // Hero
+  document.getElementById('hero-baby').textContent = babyName;
+  document.getElementById('hero-sub').textContent  =
+    [CLIENT.hospital, CLIENT.session_date].filter(Boolean).join(' · ');
+
+  // Fetch files in parallel based on delivery_type
+  const [photos, videoFiles] = await Promise.all([
+    hasPhotos() && CLIENT.photo_folder_id
+      ? fetchFiles(CLIENT.photo_folder_id, 'image').catch(() => [])
+      : Promise.resolve([]),
+    hasVideo() && CLIENT.video_folder_id
+      ? fetchFiles(CLIENT.video_folder_id, 'video').catch(() => [])
+      : Promise.resolve([]),
+  ]);
+
+  // Hero image = first photo
+  const heroImg = document.getElementById('hero-img');
+  heroImg.src = photos.length
+    ? `https://lh3.googleusercontent.com/d/${photos[0].id}`
+    : CONFIG.PLACEHOLDER;
+  heroImg.onerror = () => { heroImg.src = CONFIG.PLACEHOLDER; };
+
+  // Build UI sections
+  renderCTA(photos, videoFiles);
+  renderNavTabs();
+  if (hasPhotos()) buildPhotoGrids(photos);
+  if (hasVideo())  renderFilm(videoFiles);
+  if (hasPrints()) renderPrints();
+
+  // Show
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+}
+
+/* ════════════════════════════════════════
+   CTA BUTTONS
+════════════════════════════════════════ */
+function renderCTA(photos, videoFiles) {
+  const wrap = document.getElementById('cta-wrap');
+  wrap.innerHTML = '';
+
+  if (hasPhotos() && CLIENT.photo_folder_id) {
+    wrap.appendChild(makeBtn('btn-p',
+      `https://drive.google.com/drive/folders/${CLIENT.photo_folder_id}`,
+      iconDownload(), 'Download Photos'));
+  }
+
+  if (hasVideo() && videoFiles.length) {
+    const vid = videoFiles[0];
+    wrap.appendChild(makeBtn('btn-s',
+      `https://drive.google.com/uc?id=${vid.id}&export=download`,
+      iconFilm(), 'Download Film'));
+  }
+
+  if (hasPrints() && CLIENT.pixieset_url) {
+    document.getElementById('prints-card').style.display = 'flex';
+    document.getElementById('prints-card-btn').href = CLIENT.pixieset_url;
+  }
+}
+
+/* ════════════════════════════════════════
+   NAV TABS
+════════════════════════════════════════ */
+function renderNavTabs() {
+  if (hasPhotos()) document.getElementById('nav-gallery').classList.remove('hidden');
+  if (hasVideo())  document.getElementById('nav-film').classList.remove('hidden');
+  if (hasPrints()) document.getElementById('nav-prints').classList.remove('hidden');
+
+  if (hasPhotos()) document.getElementById('photo-teaser-section').style.display = 'block';
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   PHOTO GRIDS
+════════════════════════════════════════ */
+function buildPhotoGrids(photos) {
+  _gridSrcs = photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`);
+
+  // Home tab teaser (max 6)
+  const teaser = document.getElementById('stack-container');
+  teaser.innerHTML = '';
+  _gridSrcs.slice(0, 6).forEach((src, i) => teaser.appendChild(makePhotoCell(src, i)));
+  document.getElementById('teaser-count').textContent = `${_gridSrcs.length} photos`;
+
+  if (_gridSrcs.length > 6) {
+    const btn = document.createElement('button');
+    btn.className = 'see-all-btn';
+    btn.textContent = `See all ${_gridSrcs.length} photos`;
+    btn.addEventListener('click', () => switchTab('tab-gallery'));
+    teaser.insertAdjacentElement('afterend', btn);
+  }
+
+  // Full gallery tab
+  const gallery = document.getElementById('gallery-grid');
+  gallery.innerHTML = '';
+  _gridSrcs.forEach((src, i) => gallery.appendChild(makePhotoCell(src, i)));
+  document.getElementById('gallery-count').textContent = `${_gridSrcs.length} photos`;
+}
+
+function makePhotoCell(src, i) {
+  const cell = document.createElement('div');
+  cell.className = 'photo-cell';
+  const img = document.createElement('img');
+  img.src = src; img.alt = `Moment ${i+1}`;
+  img.loading = i < 6 ? 'eager' : 'lazy';
+  img.draggable = false;
+  img.onerror = () => { cell.style.display='none'; };
+  const shield = document.createElement('div');
+  shield.className = 'photo-shield';
+  shield.dataset.open = '1';
+  shield.addEventListener('contextmenu', e => e.preventDefault());
+  shield.addEventListener('click', () => openLightbox(i));
+  cell.appendChild(img);
+  cell.appendChild(shield);
+  return cell;
+}
+
+/* ════════════════════════════════════════
+   LIGHTBOX
+════════════════════════════════════════ */
+let _lbIdx = 0;
+function openLightbox(idx) {
+  _lbIdx = idx;
+  document.getElementById('lb-img').src = _gridSrcs[idx];
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbStep(dir) {
+  _lbIdx = (_lbIdx + dir + _gridSrcs.length) % _gridSrcs.length;
+  document.getElementById('lb-img').src = _gridSrcs[_lbIdx];
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('lb-close').addEventListener('click', closeLightbox);
+  document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
+  document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
+  document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeLightbox();
+  });
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  lbStep(-1);
+    if (e.key === 'ArrowRight') lbStep(1);
+    if (e.key === 'Escape')     closeLightbox();
+  });
+});
+
+/* ════════════════════════════════════════
+   FILM
+════════════════════════════════════════ */
+function renderFilm(videoFiles) {
+  const wrap = document.getElementById('film-wrap');
+  if (!videoFiles.length) {
+    wrap.innerHTML = `<div class="film-none">Your film is being prepared. Check back soon.</div>`;
+    return;
+  }
+  const vid = videoFiles[0];
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://drive.google.com/file/d/${vid.id}/preview`;
+  iframe.allowFullscreen = true;
+  iframe.allow = 'autoplay';
+  wrap.appendChild(iframe);
+}
+
+/* ════════════════════════════════════════
+   PRINTS
+════════════════════════════════════════ */
+function renderPrints() {
+  if (!CLIENT.pixieset_url) return;
+  document.getElementById('prints-tab-btn').href = CLIENT.pixieset_url;
+}
+
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+function switchTab(tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector(`[data-tab="${tabId}"]`)?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function makeBtn(cls, href, iconSvg, label) {
+  const a = document.createElement('a');
+  a.className = cls; a.href = href; a.target = '_blank'; a.rel = 'noopener';
+  a.innerHTML = iconSvg + label;
+  return a;
+}
+
+function iconDownload() {
+  return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>`;
+}
+function iconFilm() {
+  return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+}
+
+function showError() {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('error-screen').classList.add('show');
+}
+</script>
+</body>
+</html>

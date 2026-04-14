@@ -4,57 +4,13 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// ── Package catalog (update prices/links when Stripe links are ready) ──
-const PACKAGES = [
-  {
-    id: 'photos',
-    name: 'Digital Visual Legacy',
-    badge: null,
-    description: 'Still cinematography focused — a comprehensive collection of professionally mastered digital highlights.',
-    features: ['40+ Mastered Highlights', 'Digital Art Gallery Access', 'Private Viewing & Download Rights', 'Secure SMS Delivery'],
-    prices: { hospital: 149, portal: 199, regular: 249 },
-    stripe: { hospital: '#', portal: '#', regular: '#' }, // replace with real Stripe links
-  },
-  {
-    id: 'video',
-    name: 'Cinematic Heirloom',
-    badge: 'Most Popular',
-    description: 'Motion tells the story still filmmaking cannot — a professionally edited film capturing the rhythm and sound of your baby\'s arrival.',
-    features: ['Full HD Cinematic Heirloom Film', 'Director\'s Cut Highlight Reel', 'Instant SMS Arrival Alert', 'Raw Narrative Audio Capture', 'Private Secure Portal'],
-    prices: { hospital: 249, portal: 329, regular: 399 },
-    stripe: { hospital: '#', portal: '#', regular: '#' },
-  },
-  {
-    id: 'bundle',
-    name: 'The Masterpiece Collection',
-    badge: null,
-    description: 'The ultimate preservation — full scale cinematography, film, and a physical heirloom book to be touched for generations.',
-    features: ['Full Cinematography Suite', 'Hand-Bound Linen Heirloom Album', 'SMS Alerts & Premium Private Portal', 'Priority Filmmaker Assignment'],
-    prices: { hospital: 449, portal: 549, regular: 649 },
-    stripe: { hospital: '#', portal: '#', regular: '#' },
-  },
-];
-
-function getPriceTier(sentAt) {
-  if (!sentAt) return 'regular';
-  const sent = new Date(sentAt).getTime();
-  if (isNaN(sent)) return 'regular';
-  const hoursElapsed = (Date.now() - sent) / 3600000;
-  if (hoursElapsed < 0) return 'hospital'; // sent in the future = hospital session
-  if (hoursElapsed <= 72) return 'portal';
-  return 'regular';
-}
-
-const RATE_MAX      = 10;   // max failed attempts
-const RATE_WINDOW   = 3600; // seconds (1 hour)
+const RATE_MAX    = 10;
+const RATE_WINDOW = 3600; // 1 hour
 
 async function checkRateLimit(env, ip) {
-  const key  = `rl:${ip}`;
-  const raw  = await env.RATE_LIMIT.get(key);
+  const raw  = await env.RATE_LIMIT.get(`rl:${ip}`);
   const data = raw ? JSON.parse(raw) : { count: 0 };
-
-  if (data.count >= RATE_MAX) return false; // blocked
-  return true; // allowed
+  return data.count < RATE_MAX;
 }
 
 async function recordFailedAttempt(env, ip) {
@@ -77,219 +33,145 @@ export default {
 
     const url = new URL(request.url);
 
-    // Si es una request de listFiles
+    // ── List files from a Google Drive folder ──
     if (url.searchParams.get('action') === 'listFiles') {
       const folderId = url.searchParams.get('folderId');
-
       if (!folderId) {
         return new Response(JSON.stringify({ error: 'Missing folderId' }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
         });
       }
-
       try {
-        const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
-        const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
-
-        const type = url.searchParams.get('type') || 'image';
-        const mimeFilter = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
-        const searchQuery = `parents='${folderId}' and ${mimeFilter}`;
-        const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(searchQuery)}&spaces=drive&fields=files(id,name,webContentLink)`;
-
-        const res = await fetch(driveUrl, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(`Drive API error: ${data.error?.message || res.status}`);
-        }
-
+        const token     = await getGoogleAccessToken(env);
+        const type      = url.searchParams.get('type') || 'image';
+        const mime      = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
+        const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`parents='${folderId}' and ${mime}`)}&spaces=drive&fields=files(id,name,webContentLink)`;
+        const res       = await fetch(driveUrl, { headers: { Authorization: `Bearer ${token}` } });
+        const data      = await res.json();
+        if (!res.ok) throw new Error(`Drive API error: ${data.error?.message || res.status}`);
         return new Response(JSON.stringify({ files: data.files || [] }), {
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
         });
-      } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
         });
       }
     }
 
+    // ── Client lookup by token ──
     const code = url.searchParams.get('code');
-
     if (!code) {
       return new Response(JSON.stringify({ error: 'Missing code' }), {
-        status: 400,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
     }
 
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const ip      = request.headers.get('CF-Connecting-IP') || 'unknown';
     const allowed = await checkRateLimit(env, ip);
     if (!allowed) {
       return new Response(JSON.stringify({ error: 'Too many attempts. Try again in 1 hour.' }), {
-        status: 429,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        status: 429, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
     }
 
-    const SHEET_ID = '1wODkzWQ3FOmOJcyXU9p3G_H3NwzCdqzvG1zAOW58Kj8';
-    const SHEET_NAME = 'Kapturit-Portal';
+    const SHEET_ID   = '1_VJRENBGuwD1R2GEQAjgpsz9ca3-h4n6ID3uPETGkQQ';
+    const SHEET_NAME = 'Clients';
 
     try {
-      console.log('[sheets] SA_CLIENT_EMAIL:', env.SA_CLIENT_EMAIL ?? 'UNDEFINED');
-      console.log('[sheets] SA_PRIVATE_KEY present:', !!env.SA_PRIVATE_KEY);
-      console.log('[sheets] SA_PRIVATE_KEY starts with:', env.SA_PRIVATE_KEY?.slice(0, 30));
-
-      const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
-      console.log('[sheets] privateKey after replace, first line:', privateKey.split('\n')[0]);
-
-      const accessToken = await getGoogleAccessToken(env.SA_CLIENT_EMAIL, privateKey);
-      console.log('[sheets] accessToken obtained, length:', accessToken?.length);
-
-      const range = encodeURIComponent(`${SHEET_NAME}!A:V`);
-      const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
-      console.log('[sheets] requesting:', sheetsUrl);
-
-      const res = await fetch(sheetsUrl, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-
-      console.log('[sheets] response status:', res.status);
+      const accessToken = await getGoogleAccessToken(env);
+      const range       = encodeURIComponent(`${SHEET_NAME}!A:K`);
+      const sheetsUrl   = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
+      const res         = await fetch(sheetsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.log('[sheets] error body:', errText);
-        throw new Error(`Sheets API error ${res.status}: ${errText}`);
+        const err = await res.text();
+        throw new Error(`Sheets API error ${res.status}: ${err}`);
       }
 
-      const json = await res.json();
-      const rows = json.values || [];
+      const { values: rows = [] } = await res.json();
 
+      // columns: A=token B=first_name C=last_name D=baby_name E=hospital
+      //          F=session_date G=delivery_type H=photo_folder_id
+      //          I=video_folder_id J=pixieset_id K=status
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
-        if ((r[18] || '').toUpperCase() === code.toUpperCase()) {
-          await clearRateLimit(env, ip); // reset counter on success
-          const sentAt   = r[21] || ''; // Column V: sent_at
-          const tier     = getPriceTier(sentAt);
-          const packages = PACKAGES.map(pkg => ({
-            id:          pkg.id,
-            name:        pkg.name,
-            badge:       pkg.badge,
-            description: pkg.description,
-            features:    pkg.features,
-            price:       pkg.prices[tier],
-            price_regular: pkg.prices.regular,
-            stripe_link: pkg.stripe[tier],
-            tier,
-          }));
-          return new Response(
-            JSON.stringify({
-              ID: r[0] || '',
-              baby_name: r[1] || '',
-              last_name: r[2] || '',
-              session_date: r[3] || '',
-              session_type: r[4] || 'Session',
-              hospital: r[5] || '',
-              weight: r[6] || '—',
-              height: r[7] || '—',
-              paid: r[8] || 'no',
-              drive_preview_folder: r[10] || '',
-              drive_hd_folder: r[11] || '',
-              drive_preview_folder_id: r[15] || '',
-              drive_hd_folder_id: r[16] || '',
-              video_folder_id: r[19] || '',
-              sent_at: sentAt,
-              price_tier: tier,
-              packages,
-            }),
-            { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
-          );
+        if ((r[0] || '').toUpperCase() !== code.toUpperCase()) continue;
+
+        const status = (r[10] || 'active').toLowerCase();
+        if (status === 'expired') {
+          return new Response(JSON.stringify({ error: 'Link expired' }), {
+            status: 410, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+          });
         }
+
+        await clearRateLimit(env, ip);
+
+        const pixieset_id = r[9] || '';
+        return new Response(
+          JSON.stringify({
+            first_name:      r[1]  || '',
+            last_name:       r[2]  || '',
+            baby_name:       r[3]  || '',
+            hospital:        r[4]  || '',
+            session_date:    r[5]  || '',
+            delivery_type:   r[6]  || 'photos',        // photos | video | photos_video | photos_print | photos_video_print
+            photo_folder_id: r[7]  || '',
+            video_folder_id: r[8]  || '',
+            pixieset_url:    pixieset_id ? `https://heartproductions.pixieset.com/${pixieset_id}/` : '',
+          }),
+          { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
       }
 
-      await recordFailedAttempt(env, ip); // count failed lookup
+      await recordFailedAttempt(env, ip);
       return new Response(JSON.stringify({ error: 'Code not found' }), {
-        status: 404,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
     }
   },
 };
 
-async function getGoogleAccessToken(clientEmail, privateKey) {
-  const now = Math.floor(Date.now() / 1000);
-
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const payload = {
-    iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly',
-    aud: 'https://oauth2.googleapis.com/token',
-    iat: now,
-    exp: now + 3600,
-  };
+async function getGoogleAccessToken(env) {
+  const now        = Math.floor(Date.now() / 1000);
+  const privateKey = env.SA_PRIVATE_KEY.replace(/\\n/g, '\n');
 
   const b64url = (obj) =>
-    btoa(JSON.stringify(obj))
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
+    btoa(JSON.stringify(obj)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
-  const signingInput = `${b64url(header)}.${b64url(payload)}`;
+  const signingInput = `${b64url({ alg: 'RS256', typ: 'JWT' })}.${b64url({
+    iss:   env.SA_CLIENT_EMAIL,
+    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly',
+    aud:   'https://oauth2.googleapis.com/token',
+    iat:   now,
+    exp:   now + 3600,
+  })}`;
 
-  const keyData = privateKey
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\s/g, '');
-
-  const binaryKey = Uint8Array.from(atob(keyData), (c) => c.charCodeAt(0));
-
+  const keyData   = privateKey.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').replace(/\s/g, '');
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
-    binaryKey,
+    Uint8Array.from(atob(keyData), c => c.charCodeAt(0)),
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
     ['sign']
   );
 
-  const signature = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    cryptoKey,
-    new TextEncoder().encode(signingInput)
-  );
+  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(signingInput));
+  const jwt = `${signingInput}.${btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')}`;
 
-  const encodedSig = btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
-  const jwt = `${signingInput}.${encodedSig}`;
-
-  console.log('[oauth] requesting token for:', clientEmail);
-  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
+  const tokenRes  = await fetch('https://oauth2.googleapis.com/token', {
+    method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+    body:    `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
   });
 
-  console.log('[oauth] token response status:', tokenRes.status);
-  const tokenJson = await tokenRes.json();
-  console.log('[oauth] token response body:', JSON.stringify(tokenJson));
-
-  if (!tokenJson.access_token) {
-    throw new Error(`OAuth error: ${JSON.stringify(tokenJson)}`);
-  }
-  return tokenJson.access_token;
+  const { access_token, error } = await tokenRes.json();
+  if (!access_token) throw new Error(`OAuth error: ${JSON.stringify(error)}`);
+  return access_token;
 }
