@@ -212,9 +212,35 @@ img{display:block;max-width:100%}
 
 /* ── Support ── */
 .support-wrap{padding:1.25rem}
-.support-title{font-family:'Noto Serif',serif;font-size:1.15rem;margin-bottom:.75rem}
-.support-email{font-size:.85rem;color:var(--muted);margin-bottom:1.25rem}
-.support-email a{color:var(--primary);font-weight:600}
+.support-title{font-family:'Noto Serif',serif;font-size:1.15rem;margin-bottom:.5rem}
+.support-contact{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.support-contact a{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--primary);font-weight:600}
+.support-contact a svg{width:16px;height:16px;stroke:var(--primary);flex-shrink:0}
+.support-divider{font-family:'Noto Serif',serif;font-size:.95rem;margin:1.5rem 0 .75rem}
+.contact-form{display:flex;flex-direction:column;gap:.75rem}
+.form-input{
+  width:100%;padding:.8rem 1rem;border-radius:.75rem;
+  border:1.5px solid var(--surf-hi);background:var(--surf-lo);
+  font-family:'Manrope',sans-serif;font-size:.88rem;color:var(--on-surf);
+  outline:none;resize:none;
+}
+.form-input:focus{border-color:var(--primary)}
+.form-success{display:none;text-align:center;padding:1.5rem 0;color:var(--primary);font-weight:600;font-size:.88rem}
+/* ── FAQ ── */
+.faq-section-title{font-family:'Noto Serif',serif;font-size:.95rem;margin:1.75rem 0 .75rem}
+.faq-list{border-top:1px solid var(--surf-hi)}
+.faq-item{border-bottom:1px solid var(--surf-hi)}
+.faq-q{
+  width:100%;background:none;border:none;text-align:left;
+  padding:.9rem 0;font-family:'Manrope',sans-serif;font-size:.85rem;
+  font-weight:600;color:var(--on-surf);cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+}
+.faq-chevron{color:var(--primary);flex-shrink:0;font-size:1.2rem;transition:transform .25s ease;font-style:normal}
+.faq-item.open .faq-chevron{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-a-inner{font-size:.82rem;line-height:1.75;color:var(--muted);padding-bottom:1rem}
+.faq-item.open .faq-a{max-height:400px}
 </style>
 </head>
 <body>
@@ -314,8 +340,29 @@ img{display:block;max-width:100%}
   <!-- ── SUPPORT TAB ── -->
   <div class="tab" id="tab-support">
     <div class="support-wrap">
-      <div class="support-title">Need help?</div>
-      <div class="support-email">Reach us at <a href="mailto:contact@heartproductions.net">contact@heartproductions.net</a></div>
+      <div class="support-title">We're here for you</div>
+      <div class="support-contact">
+        <a href="tel:+18559006266">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.84a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+          (855) 900-6266
+        </a>
+        <a href="mailto:contact@heartproductions.net">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          contact@heartproductions.net
+        </a>
+      </div>
+
+      <div class="support-divider">Send us a message</div>
+      <form class="contact-form" id="contact-form">
+        <input class="form-input" type="text" id="cf-name" placeholder="Your name" required/>
+        <input class="form-input" type="tel" id="cf-phone" placeholder="Phone number"/>
+        <textarea class="form-input" id="cf-msg" rows="3" placeholder="How can we help?" required></textarea>
+        <button class="btn-p" type="submit">Send Message</button>
+        <div class="form-success" id="form-success">✓ Message received — we'll be in touch shortly!</div>
+      </form>
+
+      <div class="faq-section-title">Frequently asked questions</div>
+      <div class="faq-list" id="faq-list"></div>
     </div>
   </div>
 
@@ -631,6 +678,60 @@ function iconDownload() {
 function iconFilm() {
   return `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
 }
+
+/* ════════════════════════════════════════
+   FAQ
+════════════════════════════════════════ */
+const FAQS = [
+  {
+    q: 'How do I download my photos?',
+    a: 'Tap the "Download Photos" button on your home screen. All photos will download in full resolution directly to your device.',
+  },
+  {
+    q: 'How do I download my film?',
+    a: 'Tap the "Download Film" button below the video player on your home screen.',
+  },
+  {
+    q: 'How long will my portal be available?',
+    a: 'Your private delivery portal stays active for 12 months from your session date.',
+  },
+  {
+    q: 'Can I share this link with family?',
+    a: 'Yes — you can share your private link with trusted family and friends so they can also view and download.',
+  },
+  {
+    q: 'When will my prints arrive?',
+    a: 'Once you place your order, shipping takes 10–15 business days.',
+  },
+  {
+    q: 'I have a question not listed here.',
+    a: 'Call or text us at (855) 900-6266 or email contact@heartproductions.net — we\'re happy to help.',
+  },
+];
+
+function initFAQ() {
+  const list = document.getElementById('faq-list');
+  list.innerHTML = '';
+  FAQS.forEach(({ q, a }) => {
+    const item = document.createElement('div');
+    item.className = 'faq-item';
+    item.innerHTML = `
+      <button class="faq-q">${q}<i class="faq-chevron">+</i></button>
+      <div class="faq-a"><div class="faq-a-inner">${a}</div></div>
+    `;
+    item.querySelector('.faq-q').addEventListener('click', () => item.classList.toggle('open'));
+    list.appendChild(item);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initFAQ();
+  document.getElementById('contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    document.getElementById('form-success').style.display = 'block';
+    e.target.reset();
+  });
+});
 
 function showError() {
   document.getElementById('loading').classList.add('hidden');
