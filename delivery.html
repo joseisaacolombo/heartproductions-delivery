@@ -408,10 +408,11 @@ async function renderDelivery() {
       : Promise.resolve([]),
   ]);
 
-  // Hero image = first photo
-  const heroImg = document.getElementById('hero-img');
-  heroImg.src = photos.length
-    ? `https://lh3.googleusercontent.com/d/${photos[0].id}`
+  // Hero image = _cover file if exists, otherwise first photo
+  const coverFile = photos.find(f => f.name.toLowerCase().startsWith('_cover')) || photos[0];
+  const heroImg   = document.getElementById('hero-img');
+  heroImg.src     = coverFile
+    ? `https://lh3.googleusercontent.com/d/${coverFile.id}`
     : CONFIG.PLACEHOLDER;
   heroImg.onerror = () => { heroImg.src = CONFIG.PLACEHOLDER; };
 

@@ -48,7 +48,7 @@ export default {
         const token     = await getGoogleAccessToken(env);
         const type      = url.searchParams.get('type') || 'image';
         const mime      = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
-        const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`parents='${folderId}' and ${mime}`)}&spaces=drive&fields=files(id,name,webContentLink)`;
+        const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`parents='${folderId}' and ${mime}`)}&spaces=drive&fields=files(id,name,webContentLink)&orderBy=name`;
         const res       = await fetch(driveUrl, { headers: { Authorization: `Bearer ${token}` } });
         const data      = await res.json();
         if (!res.ok) throw new Error(`Drive API error: ${data.error?.message || res.status}`);
