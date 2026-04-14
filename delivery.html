@@ -138,12 +138,11 @@ img{display:block;max-width:100%}
   background:transparent;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;
 }
 
-/* ── Film tab ── */
-.film-wrap{padding:1.25rem}
-.film-player{border-radius:1.25rem;overflow:hidden;aspect-ratio:16/9;background:var(--on-surf)}
-.film-player iframe{width:100%;height:100%;border:none}
-.film-title{font-family:'Noto Serif',serif;font-size:1.05rem;padding:.9rem 1.25rem .25rem}
-.film-none{padding:3rem 2rem;text-align:center;color:var(--muted);font-size:.85rem}
+/* ── Video in home ── */
+.home-film-section{padding:0 1.25rem 1.25rem}
+.home-film-label{font-family:'Noto Serif',serif;font-size:1rem;margin-bottom:.65rem;color:var(--on-surf)}
+.home-film-player{border-radius:1.25rem;overflow:hidden;aspect-ratio:16/9;background:var(--on-surf)}
+.home-film-player iframe{width:100%;height:100%;border:none}
 
 /* ── Prints tab ── */
 .prints-tab-wrap{padding:1.25rem}
@@ -235,6 +234,12 @@ img{display:block;max-width:100%}
     <!-- Download buttons -->
     <div class="cta-wrap" id="cta-wrap"></div>
 
+    <!-- Video (only if delivery includes video) -->
+    <div class="home-film-section" id="home-film-section" style="display:none">
+      <div class="home-film-label">Your Film</div>
+      <div class="home-film-player" id="home-film-player"></div>
+    </div>
+
     <!-- Prints card (only if prints) -->
     <div class="prints-card" id="prints-card" style="display:none">
       <div class="prints-title">Your Print Credits</div>
@@ -262,14 +267,6 @@ img{display:block;max-width:100%}
       <span id="gallery-count"></span>
     </div>
     <div class="photo-grid" id="gallery-grid"></div>
-  </div>
-
-  <!-- ── FILM TAB ── -->
-  <div class="tab" id="tab-film">
-    <div class="film-title">Your Film</div>
-    <div class="film-wrap">
-      <div class="film-player" id="film-wrap"></div>
-    </div>
   </div>
 
   <!-- ── PRINTS TAB ── -->
@@ -315,10 +312,7 @@ img{display:block;max-width:100%}
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
     Photos
   </button>
-  <button class="nav-btn hidden" data-tab="tab-film" id="nav-film">
-    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-    Film
-  </button>
+
   <button class="nav-btn hidden" data-tab="tab-prints" id="nav-prints">
     <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     Prints
@@ -417,8 +411,8 @@ async function renderDelivery() {
   // Build UI sections
   renderCTA(photos, videoFiles);
   renderNavTabs();
+  if (hasVideo())  renderFilmInHome(videoFiles);
   if (hasPhotos()) buildPhotoGrids(photos);
-  if (hasVideo())  renderFilm(videoFiles);
   if (hasPrints()) renderPrints();
 
   // Show
@@ -457,7 +451,6 @@ function renderCTA(photos, videoFiles) {
 ════════════════════════════════════════ */
 function renderNavTabs() {
   if (hasPhotos()) document.getElementById('nav-gallery').classList.remove('hidden');
-  if (hasVideo())  document.getElementById('nav-film').classList.remove('hidden');
   if (hasPrints()) document.getElementById('nav-prints').classList.remove('hidden');
 
   if (hasPhotos()) document.getElementById('photo-teaser-section').style.display = 'block';
@@ -553,20 +546,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ════════════════════════════════════════
-   FILM
+   FILM IN HOME
 ════════════════════════════════════════ */
-function renderFilm(videoFiles) {
-  const wrap = document.getElementById('film-wrap');
-  if (!videoFiles.length) {
-    wrap.innerHTML = `<div class="film-none">Your film is being prepared. Check back soon.</div>`;
-    return;
-  }
-  const vid = videoFiles[0];
-  const iframe = document.createElement('iframe');
-  iframe.src = `https://drive.google.com/file/d/${vid.id}/preview`;
+function renderFilmInHome(videoFiles) {
+  if (!videoFiles.length) return;
+  const section = document.getElementById('home-film-section');
+  const wrap    = document.getElementById('home-film-player');
+  const vid     = videoFiles[0];
+  const iframe  = document.createElement('iframe');
+  iframe.src            = `https://drive.google.com/file/d/${vid.id}/preview`;
   iframe.allowFullscreen = true;
-  iframe.allow = 'autoplay';
+  iframe.allow          = 'autoplay';
   wrap.appendChild(iframe);
+  section.style.display = 'block';
 }
 
 /* ════════════════════════════════════════
