@@ -35,7 +35,9 @@ export default {
 
     // ── List files from a Google Drive folder ──
     if (url.searchParams.get('action') === 'listFiles') {
-      const folderId = url.searchParams.get('folderId');
+      const raw      = url.searchParams.get('folderId') || '';
+      const match    = raw.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+      const folderId = match ? match[1] : raw.trim();
       if (!folderId) {
         return new Response(JSON.stringify({ error: 'Missing folderId' }), {
           status: 400,
@@ -79,6 +81,13 @@ export default {
     const SHEET_ID   = '1_VJRENBGuwD1R2GEQAjgpsz9ca3-h4n6ID3uPETGkQQ';
     const SHEET_NAME = 'Clients';
 
+    // Extract Drive folder ID from full URL or return as-is if already an ID
+    const extractFolderId = (val) => {
+      if (!val) return '';
+      const m = val.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+      return m ? m[1] : val.trim();
+    };
+
     try {
       const accessToken = await getGoogleAccessToken(env);
       const range       = encodeURIComponent(`${SHEET_NAME}!A:K`);
@@ -117,8 +126,8 @@ export default {
             hospital:        r[4]  || '',
             session_date:    r[5]  || '',
             delivery_type:   r[6]  || 'photos',        // photos | video | photos_video | photos_print | photos_video_print
-            photo_folder_id: r[7]  || '',
-            video_folder_id: r[8]  || '',
+            photo_folder_id: extractFolderId(r[7]),
+            video_folder_id: extractFolderId(r[8]),
             pixieset_url:    pixieset_id ? `https://heartproductions.pixieset.com/${pixieset_id}/` : '',
           }),
           { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
