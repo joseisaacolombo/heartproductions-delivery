@@ -90,7 +90,7 @@ export default {
 
     try {
       const accessToken = await getGoogleAccessToken(env);
-      const range       = encodeURIComponent(`${SHEET_NAME}!A:K`);
+      const range       = encodeURIComponent(`${SHEET_NAME}!A:L`);
       const sheetsUrl   = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
       const res         = await fetch(sheetsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
 
@@ -129,6 +129,7 @@ export default {
             photo_folder_id: extractFolderId(r[7]),
             video_folder_id: extractFolderId(r[8]),
             pixieset_url:    pixieset_id ? `https://heartproductions.pixieset.com/${pixieset_id}/` : '',
+            prints_message:  r[11] || '',
           }),
           { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
         );

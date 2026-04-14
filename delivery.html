@@ -258,7 +258,7 @@ img{display:block;max-width:100%}
     <!-- Prints card (only if prints) -->
     <div class="prints-card" id="prints-card" style="display:none">
       <div class="prints-title">Your Print Credits</div>
-      <div class="prints-desc">Use your included print credits to order physical prints, albums, canvases, and more — delivered to your door.</div>
+      <div class="prints-desc" id="prints-message">Use your included print credits to order physical prints, albums, canvases, and more — delivered to your door.</div>
       <a class="btn-s" id="prints-card-btn" href="#" target="_blank" rel="noopener">
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Order Prints
@@ -453,6 +453,11 @@ function renderCTA(photos, videoFiles) {
   if (hasPrints() && CLIENT.pixieset_url) {
     document.getElementById('prints-card').style.display = 'flex';
     document.getElementById('prints-card-btn').href = CLIENT.pixieset_url;
+    if (CLIENT.prints_message) {
+      const el  = document.getElementById('prints-message');
+      // Convert **text** → <strong>text</strong>
+      el.innerHTML = CLIENT.prints_message.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
   }
 }
 
