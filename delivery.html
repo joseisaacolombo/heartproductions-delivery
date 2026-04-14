@@ -231,13 +231,21 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- Download buttons -->
-    <div class="cta-wrap" id="cta-wrap"></div>
-
-    <!-- Video (only if delivery includes video) -->
+    <!-- Video + Download Film (only if delivery includes video) -->
     <div class="home-film-section" id="home-film-section" style="display:none">
       <div class="home-film-label">Your Film</div>
       <div class="home-film-player" id="home-film-player"></div>
+      <div class="cta-wrap" id="cta-film" style="padding-top:.75rem"></div>
+    </div>
+
+    <!-- Photo teaser + Download Photos (only if photos) -->
+    <div id="photo-teaser-section" style="display:none">
+      <div class="gallery-header">
+        <span class="gallery-title">Moments</span>
+        <span id="teaser-count"></span>
+      </div>
+      <div class="photo-grid" id="stack-container"></div>
+      <div class="cta-wrap" id="cta-photos" style="padding-top:.25rem"></div>
     </div>
 
     <!-- Prints card (only if prints) -->
@@ -248,15 +256,6 @@ img{display:block;max-width:100%}
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Order Prints
       </a>
-    </div>
-
-    <!-- Photo teaser (only if photos) -->
-    <div id="photo-teaser-section" style="display:none">
-      <div class="gallery-header">
-        <span class="gallery-title">Moments</span>
-        <span id="teaser-count"></span>
-      </div>
-      <div class="photo-grid" id="stack-container"></div>
     </div>
   </div>
 
@@ -409,10 +408,10 @@ async function renderDelivery() {
   heroImg.onerror = () => { heroImg.src = CONFIG.PLACEHOLDER; };
 
   // Build UI sections
-  renderCTA(photos, videoFiles);
   renderNavTabs();
   if (hasVideo())  renderFilmInHome(videoFiles);
   if (hasPhotos()) buildPhotoGrids(photos);
+  renderCTA(photos, videoFiles);
   if (hasPrints()) renderPrints();
 
   // Show
@@ -424,22 +423,24 @@ async function renderDelivery() {
    CTA BUTTONS
 ════════════════════════════════════════ */
 function renderCTA(photos, videoFiles) {
-  const wrap = document.getElementById('cta-wrap');
-  wrap.innerHTML = '';
-
-  if (hasPhotos() && CLIENT.photo_folder_id) {
-    wrap.appendChild(makeBtn('btn-p',
-      `https://drive.google.com/drive/folders/${CLIENT.photo_folder_id}`,
-      iconDownload(), 'Download Photos'));
-  }
-
+  // Download Film — below video player
   if (hasVideo() && videoFiles.length) {
-    const vid = videoFiles[0];
+    const vid  = videoFiles[0];
+    const wrap = document.getElementById('cta-film');
     wrap.appendChild(makeBtn('btn-s',
       `https://drive.google.com/uc?id=${vid.id}&export=download`,
       iconFilm(), 'Download Film'));
   }
 
+  // Download Photos — below moments grid
+  if (hasPhotos() && CLIENT.photo_folder_id) {
+    const wrap = document.getElementById('cta-photos');
+    wrap.appendChild(makeBtn('btn-p',
+      `https://drive.google.com/drive/folders/${CLIENT.photo_folder_id}`,
+      iconDownload(), 'Download Photos'));
+  }
+
+  // Prints card
   if (hasPrints() && CLIENT.pixieset_url) {
     document.getElementById('prints-card').style.display = 'flex';
     document.getElementById('prints-card-btn').href = CLIENT.pixieset_url;
