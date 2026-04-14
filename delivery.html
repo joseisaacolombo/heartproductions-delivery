@@ -139,7 +139,7 @@ img{display:block;max-width:100%}
 }
 
 /* ── Video in home ── */
-.home-film-section{padding:0 1.25rem 1.25rem}
+.home-film-section{padding:1.25rem 1.25rem 1.25rem}
 .home-film-label{font-family:'Noto Serif',serif;font-size:1rem;margin-bottom:.65rem;color:var(--on-surf)}
 .home-film-player{border-radius:1.25rem;overflow:hidden;aspect-ratio:16/9;background:var(--on-surf)}
 .home-film-player iframe{width:100%;height:100%;border:none}
@@ -423,7 +423,7 @@ function renderCTA(photos, videoFiles) {
   if (hasVideo() && videoFiles.length) {
     const vid  = videoFiles[0];
     const wrap = document.getElementById('cta-film');
-    wrap.appendChild(makeBtn('btn-s',
+    wrap.appendChild(makeBtn('btn-p',
       `https://drive.google.com/uc?id=${vid.id}&export=download`,
       iconFilm(), 'Download Film'));
   }
