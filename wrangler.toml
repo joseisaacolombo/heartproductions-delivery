@@ -1,4 +1,4 @@
-name = "kapturit-sheets-proxy"
+name = "hp-delivery-worker"
 type = "service"
 account_id = "04e84f55bcdf503c245a133eea53f64a"
 workers_dev = true
