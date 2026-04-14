@@ -141,8 +141,13 @@ img{display:block;max-width:100%}
 /* ── Video in home ── */
 .home-film-section{padding:1.25rem 1.25rem 1.25rem}
 .home-film-label{font-family:'Noto Serif',serif;font-size:1rem;margin-bottom:.65rem;color:var(--on-surf)}
-.home-film-player{border-radius:1.25rem;overflow:hidden;aspect-ratio:16/9;background:var(--on-surf)}
-.home-film-player iframe{width:100%;height:100%;border:none}
+.home-film-player{
+  position:relative;border-radius:1.25rem;overflow:hidden;
+  width:100%;padding-top:56.25%;background:var(--on-surf);
+}
+.home-film-player iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:none;display:block;
+}
 
 /* ── Prints tab ── */
 .prints-tab-wrap{padding:1.25rem}
