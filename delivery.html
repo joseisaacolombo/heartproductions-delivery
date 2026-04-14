@@ -138,6 +138,11 @@ img{display:block;max-width:100%}
   background:transparent;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;
 }
 
+/* ── Welcome ── */
+.welcome-wrap{padding:1.25rem 1.25rem .5rem}
+.welcome-name{font-family:'Noto Serif',serif;font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+.welcome-text{font-size:.85rem;color:var(--muted);line-height:1.7}
+
 /* ── Video in home ── */
 .home-film-section{padding:1.25rem 1.25rem 1.25rem}
 .home-film-label{font-family:'Noto Serif',serif;font-size:1rem;margin-bottom:.65rem;color:var(--on-surf)}
@@ -236,6 +241,12 @@ img{display:block;max-width:100%}
         <div class="hero-baby" id="hero-baby"></div>
         <div class="hero-sub" id="hero-sub"></div>
       </div>
+    </div>
+
+    <!-- Welcome message -->
+    <div class="welcome-wrap">
+      <div class="welcome-name" id="welcome-name"></div>
+      <div class="welcome-text">It was an honor to be there for one of the most beautiful moments of your life. Here is everything we captured for you — yours to keep forever.</div>
     </div>
 
     <!-- Video + Download Film (only if delivery includes video) -->
@@ -394,9 +405,9 @@ async function renderDelivery() {
   document.title = `Heart Productions · ${babyName}`;
 
   // Hero
-  document.getElementById('hero-baby').textContent = babyName;
-  document.getElementById('hero-sub').textContent  =
-    [CLIENT.hospital, CLIENT.session_date].filter(Boolean).join(' · ');
+  document.getElementById('hero-baby').textContent  = babyName;
+  document.getElementById('hero-sub').textContent   = [CLIENT.hospital, CLIENT.session_date].filter(Boolean).join(' · ');
+  document.getElementById('welcome-name').textContent = `Welcome, ${CLIENT.first_name.trim()}.`;
 
   // Fetch files in parallel based on delivery_type
   const [photos, videoFiles] = await Promise.all([
