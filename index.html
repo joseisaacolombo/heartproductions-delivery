@@ -515,12 +515,13 @@ async function renderDelivery() {
    CTA BUTTONS
 ════════════════════════════════════════ */
 function renderCTA(photos, videoFiles) {
-  // Download Film — below video player
+  // Download Film — prefer full-res (non-preview) file, fallback to first
   if (hasVideo() && videoFiles.length) {
-    const vid  = videoFiles[0];
+    const fullVid = videoFiles.find(f => !f.name.toLowerCase().startsWith('_preview'))
+                 || videoFiles[0];
     const wrap = document.getElementById('cta-film');
     wrap.appendChild(makeBtn('btn-p',
-      `https://drive.google.com/uc?id=${vid.id}&export=download`,
+      `https://drive.google.com/uc?id=${fullVid.id}&export=download`,
       iconFilm(), 'Download Film'));
   }
 
@@ -656,9 +657,11 @@ function renderFilmInHome(videoFiles) {
   if (!videoFiles.length) return;
   const section = document.getElementById('home-film-section');
   const wrap    = document.getElementById('home-film-player');
-  const vid     = videoFiles[0];
 
-  // Stream via Worker proxy — authenticated, CORS-safe, range-request support for iOS
+  // Use _preview file for playback if available (lighter), full-res otherwise
+  const vid = videoFiles.find(f => f.name.toLowerCase().startsWith('_preview'))
+           || videoFiles[0];
+
   const video       = document.createElement('video');
   video.src         = `${CONFIG.PROXY}?action=streamVideo&fileId=${vid.id}`;
   video.controls    = true;
