@@ -45,14 +45,24 @@ export default {
         });
       }
       try {
-        const token     = await getGoogleAccessToken(env);
-        const type      = url.searchParams.get('type') || 'image';
-        const mime      = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
-        const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`parents='${folderId}' and ${mime}`)}&spaces=drive&fields=files(id,name,webContentLink)&orderBy=name`;
-        const res       = await fetch(driveUrl, { headers: { Authorization: `Bearer ${token}` } });
-        const data      = await res.json();
-        if (!res.ok) throw new Error(`Drive API error: ${data.error?.message || res.status}`);
-        return new Response(JSON.stringify({ files: data.files || [] }), {
+        const token    = await getGoogleAccessToken(env);
+        const type     = url.searchParams.get('type') || 'image';
+        const mime     = type === 'video' ? `mimeType contains 'video'` : `mimeType contains 'image'`;
+        const q        = encodeURIComponent(`parents='${folderId}' and ${mime}`);
+        const allFiles = [];
+        let pageToken  = '';
+
+        do {
+          const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
+          const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=nextPageToken,files(id,name,webContentLink)&orderBy=name&pageSize=1000${pageParam}`;
+          const res       = await fetch(driveUrl, { headers: { Authorization: `Bearer ${token}` } });
+          const data      = await res.json();
+          if (!res.ok) throw new Error(`Drive API error: ${data.error?.message || res.status}`);
+          allFiles.push(...(data.files || []));
+          pageToken = data.nextPageToken || '';
+        } while (pageToken);
+
+        return new Response(JSON.stringify({ files: allFiles }), {
           headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
         });
       } catch (e) {
