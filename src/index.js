@@ -125,7 +125,7 @@ export default {
 
         do {
           const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
-          const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=nextPageToken,files(id,name,webContentLink)&orderBy=name&pageSize=1000${pageParam}`;
+          const driveUrl  = `https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=nextPageToken,files(id,name,webContentLink,thumbnailLink)&orderBy=name&pageSize=1000${pageParam}`;
           const res       = await fetch(driveUrl, { headers: { Authorization: `Bearer ${token}` } });
           const data      = await res.json();
           if (!res.ok) throw new Error(`Drive API error: ${data.error?.message || res.status}`);

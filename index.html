@@ -421,7 +421,8 @@ const CONFIG = {
 let CLIENT        = null;
 let DELIVERY_TYPE = 'photos';
 let _gridSrcs     = [];
-let _gridDownload = []; // download links per photo
+let _gridFullSrcs = []; // full-res for lightbox
+let _gridDownload = [];
 
 /* ── Delivery type helpers ── */
 const hasPhotos = () => DELIVERY_TYPE.includes('photos');
@@ -492,7 +493,9 @@ async function renderDelivery() {
   const coverFile = photos.find(f => f.name.toLowerCase().startsWith('_cover')) || photos[0];
   const heroImg   = document.getElementById('hero-img');
   heroImg.src     = coverFile
-    ? `https://lh3.googleusercontent.com/d/${coverFile.id}`
+    ? (coverFile.thumbnailLink
+        ? coverFile.thumbnailLink.replace(/=s\d+$/, '=s1200')
+        : `${CONFIG.PROXY}?action=getFile&fileId=${coverFile.id}`)
     : CONFIG.PLACEHOLDER;
   heroImg.onerror = () => { heroImg.src = CONFIG.PLACEHOLDER; };
 
@@ -565,7 +568,11 @@ function renderNavTabs() {
    PHOTO GRIDS
 ════════════════════════════════════════ */
 function buildPhotoGrids(photos) {
-  _gridSrcs     = photos.map(f => `${CONFIG.PROXY}?action=getFile&fileId=${f.id}`);
+  // Grid uses Drive-generated thumbnail (fast CDN, ~200KB) — full res only in lightbox
+  _gridSrcs     = photos.map(f => f.thumbnailLink
+    ? f.thumbnailLink.replace(/=s\d+$/, '=s800')   // bump thumbnail to 800px
+    : `${CONFIG.PROXY}?action=getFile&fileId=${f.id}`);
+  _gridFullSrcs = photos.map(f => `${CONFIG.PROXY}?action=getFile&fileId=${f.id}`);
   _gridDownload = photos.map(f => f.webContentLink || `https://drive.google.com/uc?id=${f.id}&export=download`);
 
   // Home tab teaser (max 6)
@@ -613,7 +620,7 @@ function makePhotoCell(src, i) {
 let _lbIdx = 0;
 function openLightbox(idx) {
   _lbIdx = idx;
-  document.getElementById('lb-img').src = _gridSrcs[idx];
+  document.getElementById('lb-img').src = _gridFullSrcs[idx] || _gridSrcs[idx];
   document.getElementById('lb-download').href = _gridDownload[idx] || '#';
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -624,7 +631,7 @@ function closeLightbox() {
 }
 function lbStep(dir) {
   _lbIdx = (_lbIdx + dir + _gridSrcs.length) % _gridSrcs.length;
-  document.getElementById('lb-img').src = _gridSrcs[_lbIdx];
+  document.getElementById('lb-img').src = _gridFullSrcs[_lbIdx] || _gridSrcs[_lbIdx];
   document.getElementById('lb-download').href = _gridDownload[_lbIdx] || '#';
 }
 document.addEventListener('DOMContentLoaded', () => {
