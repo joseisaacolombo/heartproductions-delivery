@@ -517,7 +517,7 @@ async function renderDelivery() {
 function renderCTA(photos, videoFiles) {
   // Download Film — prefer full-res (non-preview) file, fallback to first
   if (hasVideo() && videoFiles.length) {
-    const fullVid = videoFiles.find(f => !f.name.toLowerCase().startsWith('_preview'))
+    const fullVid = videoFiles.find(f => !f.name.toLowerCase().includes('_preview'))
                  || videoFiles[0];
     const wrap = document.getElementById('cta-film');
     wrap.appendChild(makeBtn('btn-p',
@@ -659,7 +659,7 @@ function renderFilmInHome(videoFiles) {
   const wrap    = document.getElementById('home-film-player');
 
   // Use _preview file for playback if available (lighter), full-res otherwise
-  const vid = videoFiles.find(f => f.name.toLowerCase().startsWith('_preview'))
+  const vid = videoFiles.find(f => f.name.toLowerCase().includes('_preview'))
            || videoFiles[0];
 
   const video       = document.createElement('video');
