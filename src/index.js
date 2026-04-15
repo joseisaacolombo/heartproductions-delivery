@@ -33,6 +33,36 @@ export default {
 
     const url = new URL(request.url);
 
+    // ── Stream video file from Drive (proxy with auth + range support) ──
+    if (url.searchParams.get('action') === 'streamVideo') {
+      const fileId = url.searchParams.get('fileId');
+      if (!fileId || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+        return new Response('Missing or invalid fileId', { status: 400, headers: CORS_HEADERS });
+      }
+      try {
+        const token       = await getGoogleAccessToken(env);
+        const driveUrl    = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+        const upstream    = { Authorization: `Bearer ${token}` };
+        const rangeHeader = request.headers.get('Range');
+        if (rangeHeader) upstream['Range'] = rangeHeader;
+
+        const driveRes = await fetch(driveUrl, { headers: upstream });
+        const resHeaders = {
+          ...CORS_HEADERS,
+          'Content-Type':   driveRes.headers.get('Content-Type')   || 'video/mp4',
+          'Accept-Ranges':  'bytes',
+        };
+        if (driveRes.headers.get('Content-Length')) resHeaders['Content-Length'] = driveRes.headers.get('Content-Length');
+        if (driveRes.headers.get('Content-Range'))  resHeaders['Content-Range']  = driveRes.headers.get('Content-Range');
+
+        return new Response(driveRes.body, { status: driveRes.status, headers: resHeaders });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        });
+      }
+    }
+
     // ── List files from a Google Drive folder ──
     if (url.searchParams.get('action') === 'listFiles') {
       const raw      = url.searchParams.get('folderId') || '';
