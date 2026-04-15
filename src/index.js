@@ -33,29 +33,70 @@ export default {
 
     const url = new URL(request.url);
 
-    // ── Stream video file from Drive (proxy with auth + range support) ──
+    // ── Stream video file from Drive (proxy with auth + iOS range support) ──
     if (url.searchParams.get('action') === 'streamVideo') {
       const fileId = url.searchParams.get('fileId');
       if (!fileId || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
         return new Response('Missing or invalid fileId', { status: 400, headers: CORS_HEADERS });
       }
       try {
-        const token       = await getGoogleAccessToken(env);
-        const driveUrl    = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-        const upstream    = { Authorization: `Bearer ${token}` };
-        const rangeHeader = request.headers.get('Range');
-        if (rangeHeader) upstream['Range'] = rangeHeader;
+        const token = await getGoogleAccessToken(env);
+        const auth  = { Authorization: `Bearer ${token}` };
 
-        const driveRes = await fetch(driveUrl, { headers: upstream });
+        // Get file size + mimeType — required for iOS to seek/play
+        const metaRes  = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=size,mimeType`, { headers: auth });
+        const meta     = await metaRes.json();
+        const total    = parseInt(meta.size || '0');
+        const mimeType = meta.mimeType || 'video/mp4';
+
+        const rangeHeader = request.headers.get('Range');
+        const fetchHdrs   = { ...auth };
+        if (rangeHeader) fetchHdrs['Range'] = rangeHeader;
+
+        const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: fetchHdrs });
+
         const resHeaders = {
           ...CORS_HEADERS,
-          'Content-Type':   driveRes.headers.get('Content-Type')   || 'video/mp4',
-          'Accept-Ranges':  'bytes',
+          'Content-Type':  mimeType,
+          'Accept-Ranges': 'bytes',
         };
-        if (driveRes.headers.get('Content-Length')) resHeaders['Content-Length'] = driveRes.headers.get('Content-Length');
-        if (driveRes.headers.get('Content-Range'))  resHeaders['Content-Range']  = driveRes.headers.get('Content-Range');
 
-        return new Response(driveRes.body, { status: driveRes.status, headers: resHeaders });
+        if (rangeHeader) {
+          // iOS probe: respond 206 with explicit Content-Range
+          const cr = driveRes.headers.get('Content-Range') || `bytes 0-${total - 1}/${total}`;
+          resHeaders['Content-Range']  = cr;
+          resHeaders['Content-Length'] = driveRes.headers.get('Content-Length') || '';
+          return new Response(driveRes.body, { status: 206, headers: resHeaders });
+        } else {
+          resHeaders['Content-Length'] = String(total);
+          return new Response(driveRes.body, { status: 200, headers: resHeaders });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        });
+      }
+    }
+
+    // ── Proxy a single Drive file (image or video thumbnail) ──
+    if (url.searchParams.get('action') === 'getFile') {
+      const fileId = url.searchParams.get('fileId');
+      if (!fileId || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+        return new Response('Missing or invalid fileId', { status: 400, headers: CORS_HEADERS });
+      }
+      try {
+        const token    = await getGoogleAccessToken(env);
+        const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return new Response(driveRes.body, {
+          status: driveRes.status,
+          headers: {
+            'Content-Type':  driveRes.headers.get('Content-Type') || 'image/jpeg',
+            'Cache-Control': 'public, max-age=86400',
+            ...CORS_HEADERS,
+          },
+        });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), {
           status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },

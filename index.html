@@ -565,7 +565,7 @@ function renderNavTabs() {
    PHOTO GRIDS
 ════════════════════════════════════════ */
 function buildPhotoGrids(photos) {
-  _gridSrcs     = photos.map(f => `https://lh3.googleusercontent.com/d/${f.id}`);
+  _gridSrcs     = photos.map(f => `${CONFIG.PROXY}?action=getFile&fileId=${f.id}`);
   _gridDownload = photos.map(f => f.webContentLink || `https://drive.google.com/uc?id=${f.id}&export=download`);
 
   // Home tab teaser (max 6)
