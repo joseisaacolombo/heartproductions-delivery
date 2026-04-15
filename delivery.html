@@ -171,9 +171,29 @@ img{display:block;max-width:100%}
   position:relative;border-radius:1.25rem;overflow:hidden;
   width:100%;padding-top:65%;background:var(--on-surf);
 }
-.home-film-player iframe{
+.home-film-player video,.home-film-player iframe{
   position:absolute;inset:0;width:100%;height:100%;border:none;display:block;
 }
+/* Video placeholder (shown before user taps play) */
+.film-placeholder{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.75rem;
+  background:#1a1a1a;cursor:pointer;
+}
+.film-play-btn{
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.film-placeholder:hover .film-play-btn{background:rgba(255,255,255,.25)}
+.film-play-btn svg{width:26px;height:26px;fill:#fff;margin-left:4px}
+.film-placeholder-label{font-size:.8rem;color:rgba(255,255,255,.55);letter-spacing:.04em}
+.film-open-drive{
+  display:block;margin-top:.6rem;text-align:center;
+  font-size:.78rem;color:var(--muted);text-decoration:none;
+}
+.film-open-drive:hover{color:var(--primary)}
 
 /* ── Prints tab ── */
 .prints-tab-wrap{padding:1.25rem}
@@ -650,11 +670,16 @@ function renderFilmInHome(videoFiles) {
   const section = document.getElementById('home-film-section');
   const wrap    = document.getElementById('home-film-player');
   const vid     = videoFiles[0];
-  const iframe  = document.createElement('iframe');
-  iframe.src            = `https://drive.google.com/file/d/${vid.id}/preview`;
-  iframe.allowFullscreen = true;
-  iframe.allow          = 'autoplay';
-  wrap.appendChild(iframe);
+
+  // Direct file URL — no Google cookies needed, works in incognito
+  const src    = `https://drive.google.com/uc?export=download&id=${vid.id}&confirm=t`;
+  const video  = document.createElement('video');
+  video.src      = src;
+  video.controls = true;
+  video.playsInline = true;
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;border-radius:1.25rem';
+
+  wrap.appendChild(video);
   section.style.display = 'block';
 }
 
