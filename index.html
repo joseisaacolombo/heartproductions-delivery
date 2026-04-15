@@ -653,7 +653,7 @@ function renderFilmInHome(videoFiles) {
 
   // Stream via Worker proxy — authenticated, CORS-safe, range-request support for iOS
   const video       = document.createElement('video');
-  video.src         = `${PROXY}?action=streamVideo&fileId=${vid.id}`;
+  video.src         = `${CONFIG.PROXY}?action=streamVideo&fileId=${vid.id}`;
   video.controls    = true;
   video.playsInline = true;
   video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;border-radius:1.25rem';
